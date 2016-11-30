@@ -57,40 +57,69 @@ public class GoClient implements ActionListener{
 	/** Metoda obslugujaca zdarzenia wysylane przez okna klienta.
 	 * TODO: actionPerformed: napisac obsluge zdarzen z okna gry. */
 	public void actionPerformed(ActionEvent e) {
-		System.out.println(e.getSource());
 		/* Kazdy if wysyla do serwera odpowiedni komunikat, ktory serwer obsluguje metoda executeCommand*/
-		if(e.getActionCommand() == "Start New Game"){
-		      out.println("START");
-		}
-		if(e.getActionCommand() == "Options"){
-		      out.println("OPTIONS");
-		}
-		if(e.getActionCommand() == "Exit"){
-		      out.println("EXIT");
-		      try {
-				socket.close();
+		String command = "";
+		if(		 e.getActionCommand() == "Start New Game"){
+			command = "START";
+		}else if(e.getActionCommand() == "Options"){
+			command = "SETTINGS";
+		}else if(e.getActionCommand() == "Exit"){
+			command = "EXIT";
+		    try {
+		    	out.println(command);
+		    	socket.close();
 				return;
-		      } catch (IOException e1) { e1.printStackTrace(); }		      
+		    } catch (IOException e1) { e1.printStackTrace(); }		      
+		}else if(e.getActionCommand() == "Save Settings"){
+			command = createSettingsString();
+		}else if(e.getActionCommand() == "Exit Settings"){
+			command = "CLOSE SETTINGS";
 		}
-		try { /* Wykonaj polecenie wyslane przez serwer */
+		out.println(command);
+		try { /* Wykonaj polecenie otrzymane przez serwer */
 			executeCommand(in.readLine());
 		}catch (IOException execption) { System.out.println("Read failed"); System.exit(1); }	
 	} // end actionPerformed
 
 	/** Metoda wykonujaca polecenia otrzymane od serwera. 
-	 * TODO: executeCommand: uzupelnic o komendy*/
+	 * TODO: executeCommand: uzupelnic o komendy
+	 * mozna pomyslec o osobnych funkcjach, zeby nie przedluzacz tej metody za bardzo*/
 	private void executeCommand(String command){
 		System.out.println(command);//
-		if(command.startsWith("OPEN BOARD")){
-			mainMenu.setVisible(false);
-			boardFrame = new BoardFrame(this); 
-			boardFrame.addWindowListener(new MyWindowAdapter(this));
-			boardFrame.setVisible(true);
-		}
-		if(command.startsWith("OPEN OPTIONS")){ //dodac frame dla opcji
+		if(command.startsWith("OPEN BOARD")){ // uzupelnic o wybrane w opcje z settings, zeby otwieralo odpowiedni rozmiar
+			openBoard(command);
+		}else if(command.startsWith("OPEN SETTINGS")){
 			mainMenu.setVisible(false);
 			settings.setVisible(true);			
+		}else if(command.startsWith("CLOSE SETTINGS")){
+			settings.setVisible(false);	
+			mainMenu.setVisible(true);		
+		}else		
+		if(command.startsWith("OK")){ 
 		}
 	} // end executeCommand
+	
+	/** Metoda otwiera okno z gra z odpowiednimi ustawieniami. */
+	private void openBoard(String command){
+		int size, opponent;
+		if(command.contains("AI")) opponent = 1; else opponent = 0;
+		if(command.contains("19")) size = 19;
+		else if(command.contains("13")) size = 13; else size = 9;
+		mainMenu.setVisible(false);
+		boardFrame = new BoardFrame(this, size, opponent); 
+		boardFrame.addWindowListener(new MyWindowAdapter(this));
+		boardFrame.setVisible(true);
+	}
+	
+	/** Metoda pobiera ustawienia z okna i przekazuje jako komende. */
+	private String createSettingsString(){
+		String command = "CHANGE SETTINGS";
+		if(settings.AIBox.isSelected()) 		 command += " AI";
+		if(settings.otherClientBox.isSelected()) command += " PL"; // Player
+		if(settings.smallSizeBox.isSelected()) 	 command += " 9x";
+		if(settings.mediumSizeBox.isSelected())  command += " 13";
+		if(settings.bigSizeBox.isSelected()) 	 command += " 19";
+		return command;
+	} // end createSettingsString
 	
 }

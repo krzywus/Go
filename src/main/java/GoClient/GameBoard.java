@@ -29,7 +29,7 @@ public class GameBoard extends JPanel {
 /*-------------------------------------------------------------------------------------------------------------------*/
 	
 	/** Konstruktor. Tworzy plansze. */
-	GameBoard(int gameSize){
+	GameBoard(int gameSize, int opponentType){
 		super();
 		this.gameSize = gameSize;
 		setDoubleBuffered(true);

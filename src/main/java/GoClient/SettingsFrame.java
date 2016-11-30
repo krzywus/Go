@@ -1,6 +1,8 @@
 package GoClient;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -9,7 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 
 
-public class SettingsFrame extends JFrame{
+public class SettingsFrame extends JFrame implements ActionListener{
 	
 	/** Wymiary okna. */
 	public final static int windowLength = 400; 
@@ -19,8 +21,8 @@ public class SettingsFrame extends JFrame{
 	private JLabel mainTitle;
 	private JLabel sizeLabel, smallSizeLabel, mediumSizeLabel, bigSizeLabel;
 	private JLabel opponentLabel, OtherOpponentLabel, AIOpponentLabel;
-	private JCheckBox smallSizeBox, mediumSizeBox, bigSizeBox;
-	private JCheckBox AIBox, otherClientBox;
+	public JCheckBox smallSizeBox, mediumSizeBox, bigSizeBox;
+	public JCheckBox AIBox, otherClientBox;
 	private JButton save, exit;
 
 	/** Klient. */
@@ -34,6 +36,9 @@ public class SettingsFrame extends JFrame{
 		this.client = client;
 		addWindowListener(new MyWindowAdapter(client));
 		init();
+		smallSizeBox.setSelected(true);		smallSizeBox.setEnabled(false);
+		otherClientBox.setSelected(true); 	otherClientBox.setEnabled(false);
+		addListeners();
 		setSizes();
 		addElements();
 		repaint();
@@ -48,7 +53,14 @@ public class SettingsFrame extends JFrame{
 		smallSizeLabel = new JLabel("9x9");	mediumSizeLabel = new JLabel("13x13"); bigSizeLabel = new JLabel("19x19");
 		smallSizeBox = new JCheckBox();  mediumSizeBox = new JCheckBox();  bigSizeBox = new JCheckBox(); 
 		AIBox = new JCheckBox();  otherClientBox = new JCheckBox(); 
-		save = new JButton("Save Settings"); exit = new JButton("Exit"); 
+		save = new JButton("Save Settings"); exit = new JButton("Exit Settings"); 
+	}
+	
+	/** Metoda ustawia klienta na sluchanie przyciskow okna oraz okno na sluchanie checkboxow. */
+	private void addListeners(){
+		save.addActionListener(client);	exit.addActionListener(client);
+		AIBox.addActionListener(this); otherClientBox.addActionListener(this);
+		smallSizeBox.addActionListener(this); mediumSizeBox.addActionListener(this); bigSizeBox.addActionListener(this);
 	}
 	
 	/** Ustawienie rozmiarow okna, planszy do gry oraz statystyk danej rozgrywki. */
@@ -67,7 +79,7 @@ public class SettingsFrame extends JFrame{
 		Dimension AIOpponentLabelDim= new Dimension(50, 30);	AIOpponentLabel.setPreferredSize(AIOpponentLabelDim);
 		Dimension OtherOpponentLabelDim= new Dimension(50, 30);	OtherOpponentLabel.setPreferredSize(OtherOpponentLabelDim);
 		Dimension saveDim= new Dimension(150, 50);	save.setPreferredSize(saveDim);
-		Dimension exitDim= new Dimension(100, 50);	exit.setPreferredSize(exitDim);
+		Dimension exitDim= new Dimension(150, 50);	exit.setPreferredSize(exitDim);
 		
 		layout.putConstraint(SpringLayout.WEST,	mainTitle,	windowLength/2-40/*-mainTitle.getWidth()*/,	SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, mainTitle,	windowHeight/40,	SpringLayout.NORTH, this);
@@ -104,7 +116,7 @@ public class SettingsFrame extends JFrame{
 		
 		layout.putConstraint(SpringLayout.WEST,	save,	windowLength/3-100,	SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, save, 8*windowHeight/10,	SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.WEST,	exit,	2*windowLength/3,	SpringLayout.WEST, this);
+		layout.putConstraint(SpringLayout.WEST,	exit,	2*windowLength/3-60,	SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, exit,	8*windowHeight/10,	SpringLayout.NORTH, this);
 	} // end setSizes
 	
@@ -120,4 +132,30 @@ public class SettingsFrame extends JFrame{
 		add(save);
 		add(exit);
 	} // end addElements
+
+	/** Metoda do pilnowania checkboxow. */
+	public void actionPerformed(ActionEvent e) {
+		if(e.getSource() == AIBox){ 
+			if(AIBox.isSelected()) AIBox.setEnabled(false);
+			otherClientBox.setSelected(false); otherClientBox.setEnabled(true);
+		}else if(e.getSource() == otherClientBox){ 
+			if(otherClientBox.isSelected()) otherClientBox.setEnabled(false);
+			AIBox.setSelected(false); AIBox.setEnabled(true); 
+		}
+		if(e.getSource() == smallSizeBox){
+			smallSizeBox.setEnabled(false);
+			mediumSizeBox.setSelected(false);	mediumSizeBox.setEnabled(true);
+			bigSizeBox.setSelected(false);		bigSizeBox.setEnabled(true);
+		}		
+		if(e.getSource() == mediumSizeBox){
+			mediumSizeBox.setEnabled(false);
+			smallSizeBox.setSelected(false);	smallSizeBox.setEnabled(true);
+			bigSizeBox.setSelected(false);		bigSizeBox.setEnabled(true);
+		}		
+		if(e.getSource() == bigSizeBox){
+			bigSizeBox.setEnabled(false);
+			smallSizeBox.setSelected(false);	smallSizeBox.setEnabled(true);
+			mediumSizeBox.setSelected(false);	mediumSizeBox.setEnabled(true);
+		}
+	} // end actionPerformed
 }

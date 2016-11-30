@@ -29,10 +29,10 @@ public class BoardFrame extends JFrame {
 
 	/** Konstruktor. Tworzy okno oraz plansze do gry.
 	 * 	TODO: panel z statystykami*/
-	BoardFrame(GoClient client){
+	BoardFrame(GoClient client, int size, int opponent){
 		super();
 		this.client = client;
-		board = new GameBoard(9);	//TODO: 9 - settings.size
+		board = new GameBoard(size, opponent);	//TODO: 9 - settings.size
 		addWindowListener(new BoardWindowAdapter());
 		setSizes();		
 		add(board);
