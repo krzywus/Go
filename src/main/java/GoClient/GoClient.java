@@ -9,6 +9,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.swing.JOptionPane;
+
 public class GoClient implements ActionListener{
 
 	/** Pola obslugi klient-serwer. */
@@ -64,21 +66,25 @@ public class GoClient implements ActionListener{
 		}else if(e.getActionCommand() == "Options"){
 			command = "SETTINGS";
 		}else if(e.getActionCommand() == "Exit"){
-			command = "EXIT";
-		    try {
-		    	out.println(command);
-		    	socket.close();
-				return;
-		    } catch (IOException e1) { e1.printStackTrace(); }		      
+			command = "EXIT";	
 		}else if(e.getActionCommand() == "Save Settings"){
 			command = createSettingsString();
 		}else if(e.getActionCommand() == "Exit Settings"){
 			command = "CLOSE SETTINGS";
+		}else if(e.getActionCommand() == "EXIT GAME"){
+			command = "EXIT GAME";
+		}else if(e.getActionCommand() == "Resign"){
+			int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to resign?", "", JOptionPane.YES_NO_OPTION);
+			if (confirm == JOptionPane.YES_OPTION){
+				command = "EXIT GAME";
+	        }else command = "OK";
+		}else if(e.getActionCommand() == "Pass"){	/** TODO: zaimplementowac  */
+			command = "OK";
 		}
 		out.println(command);
 		try { /* Wykonaj polecenie otrzymane przez serwer */
 			executeCommand(in.readLine());
-		}catch (IOException execption) { System.out.println("Read failed"); System.exit(1); }	
+		}catch (IOException exception) { System.out.println("Read failed"); System.exit(1); }	
 	} // end actionPerformed
 
 	/** Metoda wykonujaca polecenia otrzymane od serwera. 
@@ -94,9 +100,13 @@ public class GoClient implements ActionListener{
 		}else if(command.startsWith("CLOSE SETTINGS")){
 			settings.setVisible(false);	
 			mainMenu.setVisible(true);		
-		}else		
-		if(command.startsWith("OK")){ 
-		}
+		}else if(command.startsWith("EXIT GAME")){
+			mainMenu.setVisible(true);
+			boardFrame.setVisible(false);
+		}else if(command.startsWith("EXIT")){
+			System.exit(0);
+		}else
+		if(command.startsWith("OK")){ } // all ok. do nothing
 	} // end executeCommand
 	
 	/** Metoda otwiera okno z gra z odpowiednimi ustawieniami. */
@@ -107,7 +117,6 @@ public class GoClient implements ActionListener{
 		else if(command.contains("13")) size = 13; else size = 9;
 		mainMenu.setVisible(false);
 		boardFrame = new BoardFrame(this, size, opponent); 
-		boardFrame.addWindowListener(new MyWindowAdapter(this));
 		boardFrame.setVisible(true);
 	}
 	

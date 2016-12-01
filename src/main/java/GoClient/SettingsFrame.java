@@ -73,13 +73,12 @@ public class SettingsFrame extends JFrame implements ActionListener{
 		Dimension mainTitleDim= new Dimension(100, 50);	mainTitle.setPreferredSize(mainTitleDim);
 		Dimension sizeLabelDim= new Dimension(80, 35);	sizeLabel.setPreferredSize(sizeLabelDim);
 		Dimension smallSizeLabelDim= new Dimension(30, 30);	smallSizeLabel.setPreferredSize(smallSizeLabelDim);
-		Dimension mediumSizeLabelDim= new Dimension(50, 30);	mediumSizeLabel.setPreferredSize(mediumSizeLabelDim);
-		Dimension bigSizeLabelDim= new Dimension(50, 30);	bigSizeLabel.setPreferredSize(bigSizeLabelDim);
-		Dimension opponentLabelDim= new Dimension(80, 35);	opponentLabel.setPreferredSize(opponentLabelDim);
-		Dimension AIOpponentLabelDim= new Dimension(50, 30);	AIOpponentLabel.setPreferredSize(AIOpponentLabelDim);
-		Dimension OtherOpponentLabelDim= new Dimension(50, 30);	OtherOpponentLabel.setPreferredSize(OtherOpponentLabelDim);
-		Dimension saveDim= new Dimension(150, 50);	save.setPreferredSize(saveDim);
-		Dimension exitDim= new Dimension(150, 50);	exit.setPreferredSize(exitDim);
+		Dimension mediumSizeLabelDim= new Dimension(50, 30);	
+		mediumSizeLabel.setPreferredSize(mediumSizeLabelDim); bigSizeLabel.setPreferredSize(mediumSizeLabelDim);
+		Dimension opponentLabelDim= new Dimension(80, 35);	opponentLabel.setPreferredSize(opponentLabelDim);	
+		AIOpponentLabel.setPreferredSize(mediumSizeLabelDim); OtherOpponentLabel.setPreferredSize(mediumSizeLabelDim);
+		Dimension saveDim= new Dimension(150, 50);	
+		save.setPreferredSize(saveDim); exit.setPreferredSize(saveDim);
 		
 		layout.putConstraint(SpringLayout.WEST,	mainTitle,	windowLength/2-40/*-mainTitle.getWidth()*/,	SpringLayout.WEST, this);
 		layout.putConstraint(SpringLayout.NORTH, mainTitle,	windowHeight/40,	SpringLayout.NORTH, this);

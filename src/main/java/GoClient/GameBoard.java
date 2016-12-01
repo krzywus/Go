@@ -13,25 +13,31 @@ import javax.swing.JPanel;
 /** Plansza do gry. */
 public class GameBoard extends JPanel {
 
-	/** Pola do obslugi grafiki. 
-	 * TODO: dodac grafiki dla czenych i bialych kamieni zgodnie ze sciezka ponizej. */
+	/** Pola do obslugi grafiki.  */
 	private final static String boardImgPath = "src/graphics/Board";
-	//private final static String BstoneImgPath = "src/graphics/WhiteStone.png";
-	//private final static String WstoneImgPath = "src/graphics/BlackStone.png";
+	private final static String BstoneImgPath = "src/graphics/BlackStone.png";
+	private final static String WstoneImgPath = "src/graphics/WhiteStone.png";
 	public Graphics2D g2d;
-	protected BufferedImage boardBI;	
-	private TexturePaint boardTexture;
+	protected BufferedImage boardBI, BStoneBI, WStoneBI;	
+	private TexturePaint boardTexture, WStoneTexture, BStoneTexture;
 	public Rectangle2D.Float rect;
 	
 	/** Ustawienia planszy. */
 	private int gameSize;	// size of game € {9x9, 13x13, 19x19}
+	private int stoneSize;
+	private Stone BOARD[][]; /* Każde pole jest kamieniem. Pola, odpowiadaja przecieciom na planszy. */
+	
+	/** Okno panelu. */
+	private BoardFrame frame;
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
 	
 	/** Konstruktor. Tworzy plansze. */
-	GameBoard(int gameSize, int opponentType){
+	GameBoard(BoardFrame frame, int gameSize, int opponentType){
 		super();
+		this.frame = frame;
 		this.gameSize = gameSize;
+		setStoneSize();
 		setDoubleBuffered(true);
 		setFocusable(true);
 		init();
@@ -39,21 +45,68 @@ public class GameBoard extends JPanel {
 
 	/** Metoda inicjujaca obiekt. */
 	private void init(){
-		setSize(BoardFrame.windowHeight, BoardFrame.windowHeight);
+		setSize(frame.windowHeight, frame.windowHeight);
+		BOARD = new Stone[gameSize][gameSize];
+		for(int i = 0; i <  gameSize; i++){
+			for(int j = 0; j <  gameSize; j++){
+				BOARD[i][j] = new Stone('N', i, j, this);
+				//BOARD[i][j].color = 'B';
+			}
+		}
+		/*BOARD[8][8].color = 'W';
+		BOARD[7][6].color = 'B';*/
 		drawBoard();	// narysuj plansze w buforze boardBI
+		drawStones();
+		repaint();
 	} // end init
 	
-	/** Metoda rysujaca na obiekcie. */
+	/** Metoda ustawia wielkosc kamieni do rysowania.*/
+	private void setStoneSize(){
+		if(gameSize == 9 ) stoneSize = 56;
+		else if(gameSize == 13 ) stoneSize = 42;
+		else if(gameSize == 19 ) stoneSize = 33;
+	} // end setStoneSize
+	
+	/** Metoda rysujaca na obiekcie. */			// MOZE wzorzec DECORATOR?
 	protected void paintComponent(Graphics g){
 		super.paintComponent(g);	
-		g.drawImage(boardBI, 0, 0, null); // narysuj plansze
+		g.setColor(new Color(220,179,92));			// color planszy w RGB
+		g.fillRect(0, 0, getWidth(), getHeight());
+		g.drawImage(boardBI, 40, 40, null); // narysuj plansze
+		drawStonesToBoard(g);
 	} // end paintComponent
+	
+	/** Metoda sprawdza czy na danym polu znajduje sie kamien i rysuje go. */
+	private void drawStonesToBoard(Graphics g){
+		int translationX, translationY; 
+		for(int i = 0; i <  gameSize; i++){
+			for(int j = 0; j <  gameSize; j++){
+				if(BOARD[i][j].color != 'N'){
+					translationX = 40-(stoneSize/2)+stoneSize*i; 
+					translationY = 40-(stoneSize/2)+stoneSize*j;
+					// zmiany pozycyjne (korekta bledu z braku mozliwosci przesuwania o czesci dziesietne)
+					if(gameSize != 13){ // dla plansz 9x9 i 19x19
+						if( i > 6 ) translationX += 2; else if(i > 4) translationX += 1;
+						if( j > 6 ) translationY += 2; else if(j > 4) translationY += 1;
+					}else{	translationX -= i/2; translationY -= j/2;	} // dla planszy 13x13
+					g.translate( translationX, translationY);	// przesuniecie grafiki w odpowiednie miejsce
+					if( BOARD[i][j].color == 'B'){
+						g.drawImage(BStoneBI,0,0, null);		// rysowanie kamienia
+					}else{
+						g.drawImage(WStoneBI,0,0,null);
+					}
+					g.translate( -translationX, -translationY);	// wrocenie grafika do punktu (0,0)
+				}
+			}// end for j
+		}//end for i
+	} // end drawStonesToBoard
 	
 	/** Metoda rysujaca obraz w boardBI. */
 	private void drawBoard(){
+		rect = new Rectangle2D.Float(0,0, getWidth()-80, getHeight()-80);
 		boardBI = loadImage(boardImgPath + gameSize + "x" + gameSize + ".png");
-		rect = new Rectangle2D.Float(0,0, getWidth(), getHeight());
 		boardTexture = new TexturePaint(boardBI, rect);
+		boardBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 		g2d = (Graphics2D) boardBI.getGraphics();					
 		g2d.setPaint(boardTexture);
 		g2d.fill(rect);	
@@ -69,5 +122,23 @@ public class GameBoard extends JPanel {
 		tempBI.getGraphics().drawImage(objectImage, 0, 0, null);
 		return tempBI;
 	} // end loadImage
+	
+	/** Metoda tworzaca tekstury kamieni. */
+	private void drawStones(){
+		rect = new Rectangle2D.Float(0,0, stoneSize, stoneSize);
+		WStoneBI = loadImage(WstoneImgPath);
+		BStoneBI = loadImage(BstoneImgPath);
+		WStoneTexture = new TexturePaint(WStoneBI, rect);
+		BStoneTexture = new TexturePaint(BStoneBI, rect);
+		WStoneBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+		BStoneBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+		g2d = (Graphics2D) WStoneBI.getGraphics();					
+		g2d.setPaint(WStoneTexture);
+		g2d.fill(rect);
+		g2d.translate(stoneSize,stoneSize);		g2d.fill(rect);
+		g2d = (Graphics2D) BStoneBI.getGraphics();					
+		g2d.setPaint(BStoneTexture);
+		g2d.fill(rect);		
+	} // end drawStone
 	
 }
