@@ -26,6 +26,7 @@ public class GameBoard extends JPanel {
 	private int gameSize;	// size of game € {9x9, 13x13, 19x19}
 	private int stoneSize;
 	private Stone BOARD[][]; /* Każde pole jest kamieniem. Pola, odpowiadaja przecieciom na planszy. */
+	private Stone boardCopy[][]; /* Kopia planszy do pamietania poprzedniego ruchu. ( do zasady Ko ) */
 	
 	/** Okno panelu. */
 	private BoardFrame frame;
@@ -46,15 +47,14 @@ public class GameBoard extends JPanel {
 	/** Metoda inicjujaca obiekt. */
 	private void init(){
 		setSize(frame.windowHeight, frame.windowHeight);
-		BOARD = new Stone[gameSize][gameSize];
+		BOARD	  = new Stone[gameSize][gameSize];
+		boardCopy = new Stone[gameSize][gameSize];
 		for(int i = 0; i <  gameSize; i++){
 			for(int j = 0; j <  gameSize; j++){
 				BOARD[i][j] = new Stone('N', i, j, this);
-				//BOARD[i][j].color = 'B';
+				boardCopy[i][j] = new Stone('N', i, j, this);
 			}
 		}
-		/*BOARD[8][8].color = 'W';
-		BOARD[7][6].color = 'B';*/
 		drawBoard();	// narysuj plansze w buforze boardBI
 		drawStones();
 		repaint();
@@ -140,5 +140,42 @@ public class GameBoard extends JPanel {
 		g2d.setPaint(BStoneTexture);
 		g2d.fill(rect);		
 	} // end drawStone
+	
+	
+	/** Metoda sprawdza czy ruch jest poprawny (pole wolne + nie samobojczy). 
+	 * @return true if move is valid, false otherwise
+	 * TODO: implement*/
+	protected boolean checkMoveValidity(int x, int y){
+		int stonePositionX = (x-40+stoneSize/2)/(stoneSize);
+		int stonePositionY = (y-40+stoneSize/2)/(stoneSize);
+		//System.out.println(stonePositionX + " " + stonePositionY);
+		if(BOARD[stonePositionX][stonePositionY].color == 'N'){
+			for(int i = 0; i <  gameSize; i++){	for(int j = 0; j <  gameSize; j++){	// skopiuj poprzednia plansze
+					boardCopy[i][j] = BOARD[i][j];
+			}}
+			BOARD[stonePositionX][stonePositionY] = new Stone(frame.playerColor, stonePositionX, stonePositionY, this);
+			repaint();
+			return true;
+		}else return false;
+
+	} // checkMoveValidity
+
+	/**Metoda zwracajaca pozycje ostatniego polozonego kamienia. */
+	public int[] getBoardChange() {
+		int newStone[] = new int[2];
+		for(int i = 0; i <  gameSize; i++){
+			for(int j = 0; j <  gameSize; j++){
+				if(BOARD[i][j].color != boardCopy[i][j].color){
+					newStone[0] = i;
+					newStone[1] = j;
+		}}}
+		return newStone;
+	}// end getBoardChange
+	
+	/** Metoda wykonujaca ruch przeciwnika na planszy. */
+	public void putOpponentStone(int x, int y) {
+		if(frame.playerColor == 'W') BOARD[x][y]=new Stone('B', x, y, this);
+		else  BOARD[x][y]=new Stone('W', x, y, this);
+	}// end putOpponentStone
 	
 }

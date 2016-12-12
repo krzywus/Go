@@ -3,7 +3,7 @@ package GoClient;
 public class Stone {
 
 	public char color;			// N - no alignment, B - black, W - white
-	private int positionX, positionY;
+	private int positionX, positionY;	// do puszczenia rekurencji do sasiednich kamieni w tym samym kolorze
 	private int liberty;		// liczba oddechow kamienia. mozliwe, ze niepotrzebne.
 	private GameBoard board;	// do uruchomienia rekurencji w countLiberty?
 	

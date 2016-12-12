@@ -2,6 +2,8 @@ package GoClient;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -30,18 +32,20 @@ public class BoardFrame extends JFrame {
 	private JLabel player1, player2;
 	/** Klient. */
 	private GoClient client;
+	protected char playerColor;
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 	/** Konstruktor. Tworzy okno oraz plansze do gry.
 	 * 	TODO: panel z statystykami*/
-	BoardFrame(GoClient client, int size, int opponent){
+	BoardFrame(GoClient client, int size, int opponent, char color){
 		super();
 		this.client = client;
+		playerColor = color;
 		init();
 		boardSize = size;
 		chooseWindowSize();
-		board = new GameBoard(this, boardSize, opponent);	//TODO: 9 - settings.size
+		board = new GameBoard(this, boardSize, opponent);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		setSizes();		
@@ -56,8 +60,30 @@ public class BoardFrame extends JFrame {
 		pass = new JButton("Pass");		pass.addActionListener(client);
 		player1 = new JLabel("<html> White<br>  Player1</html>"); //html do wyrownywania tekstu
 		player2 = new JLabel("<html> Black<br>  Player2</html>"); //TODO: Player - clientID ?
-	}
+	} // end init
 	
+	/** Metoda dodaje obsluge myszy do okna. */
+	public void addMouseListener() {
+		addMouseListener(new MouseListener(){	// stworzyc instancje wczesniej,zeby nie tworzy duzo obiektow
+			public void mouseClicked (MouseEvent e) {
+				if(board.contains(e.getPoint())){ 
+					removeMouseListener(this);	// wylaczenie mozliwosci wysylania sygnalow przez myszke
+					System.out.println("PLAYER MOVED");
+					if(board.checkMoveValidity(e.getX(), e.getY())){  
+						int newStone[] = board.getBoardChange();
+						client.listener.actionPerformed(  // przeslanie do klienta
+								new ActionEvent(this, 0, 
+								"GAME PLAYER MOVED POSX:" + newStone[0] + " POSY:" + newStone[1] + " ")); 	
+					}else { addMouseListener(this); }
+				}
+			} // end mouseClicked
+			public void mouseEntered (MouseEvent e) {}
+			public void mouseExited	 (MouseEvent e) {}
+			public void mousePressed (MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {}
+		});
+	}// end addMouseListener
+
 	/** Metoda ustala wielkosc okna w zaleznosci od rozmiaru planszy. */
 	private void chooseWindowSize(){
 		if(boardSize == 9){
@@ -105,6 +131,14 @@ public class BoardFrame extends JFrame {
 		add(resign);		add(pass);
 	} // end addToFrame
 	
+	/** Metoda wykonujaca ruch przeciwnika na planszy. */
+	public void putOpponentStone(String posX, String posY){
+		if(posX.contains(" ")) posX = Character.toString( posX.charAt(0) );
+		if(posY.contains(" ")) posY = Character.toString( posY.charAt(0) );
+		int x = Integer.parseInt(posX);
+		int y = Integer.parseInt(posY);
+		board.putOpponentStone(x, y);
+	} // end putOpponentStone
 	
 /** Klasa do obsługi zamykania okna. */
 private class BoardWindowAdapter extends WindowAdapter{

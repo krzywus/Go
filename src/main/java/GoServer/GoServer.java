@@ -2,12 +2,9 @@ package GoServer;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.HashSet;
 
 import javax.swing.JFrame;
 
@@ -17,6 +14,8 @@ public class GoServer {
 	/** Pola obslugi klient-serwer. */
 	private final static int PORT = 8000;
 	private ServerSocket server = null;
+	protected HashSet<ClientHandler> clients = new HashSet<ClientHandler>();
+	protected Matchmaker matchmaker = new Matchmaker();
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
 
@@ -28,7 +27,7 @@ public class GoServer {
 	      } 
 	      catch (IOException e) {
 	        System.out.println("Could not listen on port " + PORT); System.exit(-1);
-	      }	
+	      }		
 	} // end GoServer constructor
 
 	/** Metoda glowna, tworzy nowy serwer. Wyswietla okno serwera (tylko dla wygody). */
@@ -49,7 +48,7 @@ public class GoServer {
 	/** Metoda przyjmujaca nowego klienta. Dla kazdego tworzona jest instancja klasy ClientHandler.
 	 * @throws IOException  */
 	private void listenSocket() throws IOException {
-		new ClientHandler( server.accept() ).start();
+		new ClientHandler( server.accept(), this ).start();
 	}// end listenSocket
 	
 	
