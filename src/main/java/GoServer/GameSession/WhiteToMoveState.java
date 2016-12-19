@@ -7,23 +7,23 @@ public class WhiteToMoveState implements GameSessionStateBehavior{
 	}
 
 	public GameSessionStateBehavior blackMoved() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	public GameSessionStateBehavior whiteMoved() {
-		// TODO Auto-generated method stub
-		return null;
+		return GameSessionState.BlackToMove.getStateBehavior();
 	}
 
 	public GameSessionStateBehavior gameFinished() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	public GameSessionStateBehavior gameAborted() {
-		// TODO Auto-generated method stub
-		return null;
+		return GameSessionState.GameAborted.getStateBehavior();
+	}
+
+	public GameSessionStateBehavior territoryBargain() {
+		return GameSessionState.TerritoryBargain.getStateBehavior();
 	}
 
 }

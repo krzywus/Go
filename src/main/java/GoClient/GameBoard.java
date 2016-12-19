@@ -3,30 +3,32 @@ package GoClient;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.TexturePaint;
-import java.awt.Toolkit;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
-/** Plansza do gry. */
+/** Plansza do gry. Obsluguje poprawnosc ruchow zglaszanych przez graczy. Rysuje kamienie na planszy. */
 public class GameBoard extends JPanel {
 
 	/** Pola do obslugi grafiki.  */
-	private final static String boardImgPath = "src/graphics/Board";
-	private final static String BstoneImgPath = "src/graphics/BlackStone.png";
-	private final static String WstoneImgPath = "src/graphics/WhiteStone.png";
-	public Graphics2D g2d;
-	protected BufferedImage boardBI, BStoneBI, WStoneBI;	
-	private TexturePaint boardTexture, WStoneTexture, BStoneTexture;
-	public Rectangle2D.Float rect;
+	protected Graphics2D g2d;
+	protected BufferedImage boardBI, BStoneBI, alphaBStoneBI, WStoneBI, alphaWStoneBI;	
+	protected Rectangle2D.Float rect;
+	/** Klasa tworzaca grafike do gry. */
+	GameBoardBuilder gameBuilder;
 	
 	/** Ustawienia planszy. */
-	private int gameSize;	// size of game € {9x9, 13x13, 19x19}
-	private int stoneSize;
-	private Stone BOARD[][]; /* Każde pole jest kamieniem. Pola, odpowiadaja przecieciom na planszy. */
-	private Stone boardCopy[][]; /* Kopia planszy do pamietania poprzedniego ruchu. ( do zasady Ko ) */
+	protected int gameSize;	// size of game {9x9, 13x13, 19x19}
+	protected int stoneSize;
+	private Stone BOARD[][]; /* Każde pole jest kamieniem. Pola odpowiadaja przecieciom na planszy. */
+	/** Pola do obslugi zasady Ko. */
+	private int koStone[];
+	private boolean koMark;
+	/** Pole do przechowania nowego kamienia. */
+	protected int newStone[];
+	
+	/** Tablica kanalow alpha. */
+	private boolean alphaBoard[][];
 	
 	/** Okno panelu. */
 	private BoardFrame frame;
@@ -38,7 +40,8 @@ public class GameBoard extends JPanel {
 		super();
 		this.frame = frame;
 		this.gameSize = gameSize;
-		setStoneSize();
+		gameBuilder = new GameBoardBuilder(this);
+		gameBuilder.setStoneSize();
 		setDoubleBuffered(true);
 		setFocusable(true);
 		init();
@@ -48,24 +51,19 @@ public class GameBoard extends JPanel {
 	private void init(){
 		setSize(frame.windowHeight, frame.windowHeight);
 		BOARD	  = new Stone[gameSize][gameSize];
-		boardCopy = new Stone[gameSize][gameSize];
+		newStone = new int[2]; koStone = new int[2];
+		alphaBoard = new boolean[gameSize][gameSize];
+		resetAlphaBoard();
 		for(int i = 0; i <  gameSize; i++){
 			for(int j = 0; j <  gameSize; j++){
-				BOARD[i][j] = new Stone('N', i, j, this);
-				boardCopy[i][j] = new Stone('N', i, j, this);
+				BOARD[i][j] = new Stone('N', i, j);
 			}
 		}
-		drawBoard();	// narysuj plansze w buforze boardBI
-		drawStones();
+		gameBuilder.drawBoard();	// narysuj plansze w buforze boardBI
+		gameBuilder.drawStones();
 		repaint();
 	} // end init
 	
-	/** Metoda ustawia wielkosc kamieni do rysowania.*/
-	private void setStoneSize(){
-		if(gameSize == 9 ) stoneSize = 56;
-		else if(gameSize == 13 ) stoneSize = 42;
-		else if(gameSize == 19 ) stoneSize = 33;
-	} // end setStoneSize
 	
 	/** Metoda rysujaca na obiekcie. */			// MOZE wzorzec DECORATOR?
 	protected void paintComponent(Graphics g){
@@ -90,10 +88,13 @@ public class GameBoard extends JPanel {
 						if( j > 6 ) translationY += 2; else if(j > 4) translationY += 1;
 					}else{	translationX -= i/2; translationY -= j/2;	} // dla planszy 13x13
 					g.translate( translationX, translationY);	// przesuniecie grafiki w odpowiednie miejsce
+										
 					if( BOARD[i][j].color == 'B'){
-						g.drawImage(BStoneBI,0,0, null);		// rysowanie kamienia
+						if(!alphaBoard[i][j]) g.drawImage(BStoneBI,0,0, null);		// rysowanie kamienia
+						else 				  g.drawImage(alphaBStoneBI,0,0, null);
 					}else{
-						g.drawImage(WStoneBI,0,0,null);
+						if(!alphaBoard[i][j]) g.drawImage(WStoneBI,0,0, null);		// rysowanie kamienia
+						else 				  g.drawImage(alphaWStoneBI,0,0, null);
 					}
 					g.translate( -translationX, -translationY);	// wrocenie grafika do punktu (0,0)
 				}
@@ -101,81 +102,93 @@ public class GameBoard extends JPanel {
 		}//end for i
 	} // end drawStonesToBoard
 	
-	/** Metoda rysujaca obraz w boardBI. */
-	private void drawBoard(){
-		rect = new Rectangle2D.Float(0,0, getWidth()-80, getHeight()-80);
-		boardBI = loadImage(boardImgPath + gameSize + "x" + gameSize + ".png");
-		boardTexture = new TexturePaint(boardBI, rect);
-		boardBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-		g2d = (Graphics2D) boardBI.getGraphics();					
-		g2d.setPaint(boardTexture);
-		g2d.fill(rect);	
-	} // end init
 	
-	/** Metoda wczytujaca obraz. */
-	private BufferedImage loadImage(String imageURL){ 
-		Image objectImage = Toolkit.getDefaultToolkit().getImage(imageURL);		
-		//dopoki obraz nie bedzie calkowicie zaladowany
-		while(!Toolkit.getDefaultToolkit().prepareImage(objectImage, -1, -1, null)){}
-		
-		BufferedImage tempBI = new BufferedImage(objectImage.getWidth(null), objectImage.getHeight(null), BufferedImage.TYPE_4BYTE_ABGR);;
-		tempBI.getGraphics().drawImage(objectImage, 0, 0, null);
-		return tempBI;
-	} // end loadImage
-	
-	/** Metoda tworzaca tekstury kamieni. */
-	private void drawStones(){
-		rect = new Rectangle2D.Float(0,0, stoneSize, stoneSize);
-		WStoneBI = loadImage(WstoneImgPath);
-		BStoneBI = loadImage(BstoneImgPath);
-		WStoneTexture = new TexturePaint(WStoneBI, rect);
-		BStoneTexture = new TexturePaint(BStoneBI, rect);
-		WStoneBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-		BStoneBI = new BufferedImage((int) rect.getWidth(), (int) rect.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-		g2d = (Graphics2D) WStoneBI.getGraphics();					
-		g2d.setPaint(WStoneTexture);
-		g2d.fill(rect);
-		g2d.translate(stoneSize,stoneSize);		g2d.fill(rect);
-		g2d = (Graphics2D) BStoneBI.getGraphics();					
-		g2d.setPaint(BStoneTexture);
-		g2d.fill(rect);		
-	} // end drawStone
-	
-	
-	/** Metoda sprawdza czy ruch jest poprawny (pole wolne + nie samobojczy). 
-	 * @return true if move is valid, false otherwise
-	 * TODO: implement*/
+	/** Metoda sprawdza czy ruch jest poprawny (pole wolne, nie samobojczy, nie ko). 
+	 * @return true if move is valid, false otherwise */
 	protected boolean checkMoveValidity(int x, int y){
 		int stonePositionX = (x-40+stoneSize/2)/(stoneSize);
 		int stonePositionY = (y-40+stoneSize/2)/(stoneSize);
-		//System.out.println(stonePositionX + " " + stonePositionY);
 		if(BOARD[stonePositionX][stonePositionY].color == 'N'){
+			Stone tempBoard[][] = new Stone[gameSize][gameSize]; 
 			for(int i = 0; i <  gameSize; i++){	for(int j = 0; j <  gameSize; j++){	// skopiuj poprzednia plansze
-					boardCopy[i][j] = BOARD[i][j];
+				tempBoard [i][j] = BOARD[i][j];
 			}}
-			BOARD[stonePositionX][stonePositionY] = new Stone(frame.playerColor, stonePositionX, stonePositionY, this);
+			tempBoard[stonePositionX][stonePositionY] = new Stone(frame.playerColor, stonePositionX, stonePositionY);
+			LibertyVisitor visitor = new LibertyVisitor(tempBoard, gameSize);
+			tempBoard[stonePositionX][stonePositionY].accept(visitor);;
+			
+			
+			if(tempBoard[stonePositionX][stonePositionY].liberty == 0 ){
+				if( visitor.isSuicidal(tempBoard[stonePositionX][stonePositionY]) ){
+					return false;		// ruch samobojczy
+				}
+			}
+			if(koMark){ if(stonePositionX == koStone[0] && stonePositionY == koStone[1]){
+					return false;		// zasada ko, ruch niedozwolony
+				}
+			}
+
+			BOARD[stonePositionX][stonePositionY] = new Stone(frame.playerColor, stonePositionX, stonePositionY);
+			newStone[0] = stonePositionX; newStone[1] = stonePositionY;
+			deleteDeadStones(stonePositionX, stonePositionY);
+
+					
 			repaint();
 			return true;
 		}else return false;
-
 	} // checkMoveValidity
 
+	/** Metoda usuwa z planszy martwe kamienie oraz sprawdza czy ko jest aktywne.*/
+	protected void deleteDeadStones(int stonePositionX, int stonePositionY) {
+		LibertyVisitor visitor = new LibertyVisitor(BOARD, gameSize);
+		int deadStonesNumber; koMark = false;
+		deadStonesNumber = visitor.deleteDeadStones(stonePositionX, stonePositionY);
+		if(deadStonesNumber == 1){ 
+			koMark = true;
+			if(BOARD[stonePositionX-1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX-1; koStone[1] = stonePositionY; }
+			if(BOARD[stonePositionX+1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX+1; koStone[1] = stonePositionY; }
+			if(BOARD[stonePositionX][stonePositionY-1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY-1; }
+			if(BOARD[stonePositionX][stonePositionY+1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY+1; }
+		}
+	} // end deleteDeadStone
+
 	/**Metoda zwracajaca pozycje ostatniego polozonego kamienia. */
-	public int[] getBoardChange() {
-		int newStone[] = new int[2];
-		for(int i = 0; i <  gameSize; i++){
-			for(int j = 0; j <  gameSize; j++){
-				if(BOARD[i][j].color != boardCopy[i][j].color){
-					newStone[0] = i;
-					newStone[1] = j;
-		}}}
+	protected int[] getBoardChange() {
 		return newStone;
 	}// end getBoardChange
 	
 	/** Metoda wykonujaca ruch przeciwnika na planszy. */
-	public void putOpponentStone(int x, int y) {
-		if(frame.playerColor == 'W') BOARD[x][y]=new Stone('B', x, y, this);
-		else  BOARD[x][y]=new Stone('W', x, y, this);
+	protected void putOpponentStone(int x, int y) {
+		if(frame.playerColor == 'W') BOARD[x][y]=new Stone('B', x, y);
+		else  						 BOARD[x][y]=new Stone('W', x, y);
+		//backupBoard();
 	}// end putOpponentStone
+
+	/** Metoda zwraca aktualna plansze. */
+	protected Stone[][] getBoard(){
+		return BOARD;
+	}// end getBoard
 	
+	/** Metoda zwraca kamien na danej pozycji. */
+	protected Stone getStone(int x, int y){
+		int stonePositionX = (x-40+stoneSize/2)/(stoneSize);
+		int stonePositionY = (y-40+stoneSize/2)/(stoneSize);
+		return BOARD[stonePositionX][stonePositionY];
+	}// end getStone
+	
+	/** Metoda resetuje kanaly alpha na planszy. */
+	protected void resetAlphaBoard(){
+		for(int i = 0; i <  gameSize; i++){	for(int j = 0; j <  gameSize; j++){
+			this.alphaBoard[i][j] = false;
+		}}
+	}// end resetAlphaBoard
+	
+	/** Metoda zmienia kanaly alpha na planszy. */
+	protected void setAlphaBoard(boolean[][] alphaBoard){
+		for(int i = 0; i <  gameSize; i++){	for(int j = 0; j <  gameSize; j++){
+			this.alphaBoard[i][j] = alphaBoard[i][j];
+		}}
+	}// end setAlphaBoard
+	
+		
 }

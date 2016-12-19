@@ -7,23 +7,23 @@ public class GameFinishedState implements GameSessionStateBehavior{
 	}
 
 	public GameSessionStateBehavior blackMoved() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	public GameSessionStateBehavior whiteMoved() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	public GameSessionStateBehavior gameFinished() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	public GameSessionStateBehavior gameAborted() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
+	}
+
+	public GameSessionStateBehavior territoryBargain() {
+		return this;
 	}
 
 }

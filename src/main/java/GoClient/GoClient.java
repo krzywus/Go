@@ -14,14 +14,12 @@ import javax.swing.Timer;
 
 
 /** 
- * PROTOKOL KOMUNIKACJI
- * TODO: moze nie potrzebne..?
- * TODO: problemy z zamykaniem okien
- * TODO: matchmaker nie patrzy na ustawienia graczy - laczy mecze z roznymi planszami
- * TODO: zaimplementowac poprawnosc ruchow
- * TODO: wzorce projektowe
+ * 
+ * TODO: PROTOKOL KOMUNIKACJI na diagramie?
+ * TODO: Przycisk BackToGame podczas bargain
  * TODO: AI!!
- * TODO: UZYC GAME SESSION DO KOMUNIKACJI
+ * TODO: szybkosc gry zwalnia z czasem.. jakies zapychanie socketa? juz chyba nie
+ * TODO: info
  * 
  * */
 
@@ -38,11 +36,12 @@ public class GoClient implements ActionListener{
 	protected BoardFrame boardFrame;
 	private SettingsFrame settings;
 	protected ActionListener listener;
+	private GameCommander gameCommander;
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 	/** Konstruktor klasy. Tworzy GUI dla klienta. */
-	GoClient(){
+	public GoClient(){
 		mainMenu = new MainMenu(this);
 		settings = new SettingsFrame(this);
 	} // end GoClient constructor
@@ -78,40 +77,52 @@ public class GoClient implements ActionListener{
 		if(		 e.getActionCommand() == "Start New Game"){
 			mainMenu.setVisible(false);
 			command = "START";
-		}else if(e.getActionCommand() == "Options"){
-			command = "SETTINGS";
-		}else if(e.getActionCommand() == "Exit"){
-			command = "EXIT";	
-		}else if(e.getActionCommand() == "Save Settings"){
-			command = createSettingsString();
-		}else if(e.getActionCommand() == "Exit Settings"){
-			command = "CLOSE SETTINGS";
-		}else if(e.getActionCommand() == "EXIT GAME"){
-			command = "EXIT GAME";
+		}else if(e.getActionCommand() == "Options"){		command = "SETTINGS";
+		}else if(e.getActionCommand() == "Exit"){			command = "EXIT";	
+		}else if(e.getActionCommand() == "Save Settings"){	command = createSettingsString();
+		}else if(e.getActionCommand() == "Exit Settings"){	command = "CLOSE SETTINGS";
+		}else if(e.getActionCommand() == "EXIT GAME"){		command = "EXIT GAME";
+		}else if(e.getActionCommand() == "Send"){		
+			command = "GAME SEND BARGAIN "    + boardFrame.playerColor;
+			for(int[] s: boardFrame.bargainHandler.selectedStones){
+				command += s[0] + " " + s[1] + " ";
+			}
+		}else if(e.getActionCommand() == "Accept"){			
+			boardFrame.boardBuilder.bargainAccept.setEnabled(false);
+			boardFrame.boardBuilder.bargainDecline.setEnabled(false);
+			command = "GAME ACCEPT BARGAIN "  + boardFrame.playerColor; 
+		}else if(e.getActionCommand() == "Decline"){	
+			boardFrame.resetAlphaBoard(); 
+			boardFrame.repaint();
+			command = "GAME DECLINE BARGAIN " + boardFrame.playerColor; 
 		}else if(e.getActionCommand() == "Resign"){
 			int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to resign?", "", JOptionPane.YES_NO_OPTION);
 			if (confirm == JOptionPane.YES_OPTION){
 				command = "EXIT GAME";
 	        }else command = "OK";
-		}else if(e.getActionCommand() == "Pass"){	/** TODO: zaimplementowac  */
-			command = "OK";
-		}else if(e.getActionCommand().startsWith("GAME") ){	
-			command = e.getActionCommand();
+		}else if(e.getActionCommand() == "Pass"){
+			boardFrame.removeMouseListener();
+			boardFrame.disableButtons();
+			command = "GAME PASS";
+		}else if(e.getActionCommand().startsWith("GAME") ){	command = e.getActionCommand();
 		}
 		/* Wyslij polecenie do server i czekaj na odpowiedz */
 		out.println(command);
-		try { /* Wykonaj polecenie otrzymane przez serwer */
+		try { 				/* Wykonaj polecenie otrzymane przez serwer */
 			executeCommand(in.readLine());
 		}catch (IOException exception) { System.out.println("Read failed"); System.exit(1); }	
 	} // end actionPerformed
 
-	/** Metoda wykonujaca polecenia otrzymane od serwera. 
-	 * TODO: executeCommand: uzupelnic o komendy
+	
+	/** Metoda wykonujaca polecenia otrzymane od serwera.
 	 * mozna pomyslec o osobnych funkcjach, zeby nie przedluzacz tej metody za bardzo*/
 	private void executeCommand(String command){
 		if(command == null){System.out.println("null command."); return;}
-		System.out.println(command);//
-		if(command.startsWith("OPEN BOARD")){
+
+		if(command.startsWith("OK")){  // all ok. do nothing
+		}else if(command.startsWith("GAME")){
+			gameCommander.executeGameCommand(command);
+		}else if(command.startsWith("OPEN BOARD")){
 			openBoard(command);
 		}else if(command.startsWith("OPEN SETTINGS")){
 			mainMenu.setVisible(false); settings.setVisible(true);			
@@ -121,13 +132,9 @@ public class GoClient implements ActionListener{
 			mainMenu.setVisible(true);  boardFrame.setVisible(false);
 		}else if(command.startsWith("EXIT")){
 			System.exit(0);
-		}else if(command.startsWith("WAIT OPPONENT")){  // ta wiadomosc pewnie powinna byc w nowym okienku, nie w dialogu
-														// to by ulatwilo wybor opcji i byloby bardziej kompatibilne z reszta
-			//openBoard(command);
-		}else if(command.startsWith("GAME")){
-			executeGameCommand(command);
-		}else
-		if(command.startsWith("OK")){ } // all ok. do nothing
+		}else if(command.startsWith("WAIT OPPONENT")){  
+			//TODO: okno z info o czekaniu
+		}
 	} // end executeCommand
 	
 	/** Metoda otwiera okno z gra z odpowiednimi ustawieniami. */
@@ -140,11 +147,13 @@ public class GoClient implements ActionListener{
 		if(command.contains("W"))color = 'W'; else color = 'B'; 
 		mainMenu.setVisible(false);
 		boardFrame = new BoardFrame(this, size, opponent, color); 
-		//if(color == 'B') boardFrame.setEnabled(true);
-		//else boardFrame.setEnabled(false);
+		if(color == 'B'){ boardFrame.inGameInfo.setText("Your move."); boardFrame.enableButtons();	
+		}else { boardFrame.inGameInfo.setText("Black to move"); boardFrame.disableButtons(); }
 		boardFrame.setVisible(true);
+		gameCommander = new GameCommander(this, boardFrame);
 		startGame();
 	} // end openBoard
+	
 	
 	/** Metoda pobiera ustawienia z okna i przekazuje jako komende. */
 	private String createSettingsString(){
@@ -157,10 +166,11 @@ public class GoClient implements ActionListener{
 		return command;
 	} // end createSettingsString
 	
+	
 	/** Metoda zaczyna komunikacje w czasie gry miedzy klientami a serwerem. */
 	private void startGame(){
 		if(boardFrame.playerColor == 'B'){ boardFrame.addMouseListener();}
-		int timerDelay = 500; // in ms
+		int timerDelay = 150; // in ms
 		listener = new ActionListener(){
 			private String command;
 				
@@ -179,17 +189,5 @@ public class GoClient implements ActionListener{
 		};
 		new Timer(timerDelay, listener).start();
 	} // end startGame
-	
-	/** Metoda do obslugi zdarzen z gry, np. blokowanie okna gracza, ktry nie ma ruchu. */
-	private void executeGameCommand(String command){
-		if(command.contains("ENABLE")){
-			boardFrame.addMouseListener();
-			if(command.contains("NEWSTONE")){
-				int posXIndex = command.indexOf("POSX:"); String posX = command.substring(posXIndex+5, posXIndex+5+2) ;
-				int posYIndex = command.indexOf("POSY:"); String posY = command.substring(posYIndex+5, posYIndex+5+2) ;
-				boardFrame.putOpponentStone(posX, posY);
-			}
-		}else if(command.contains("DISABLE")){ }
-	}// end executeGameCommand
 	
 }

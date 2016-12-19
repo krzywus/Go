@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SpringLayout;
 
-
+/** Klasa tworzy okno Opcji, w ktorym mozna wybrac odpowiedni tryb rozgrywki.*/
 public class SettingsFrame extends JFrame implements ActionListener{
 	
 	/** Wymiary okna. */

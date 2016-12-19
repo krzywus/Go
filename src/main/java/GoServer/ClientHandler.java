@@ -17,18 +17,16 @@ public class ClientHandler extends Thread {
 	private GoServer server;
 	private Socket socket;
 	private BufferedReader in;
-	protected PrintWriter out;
+	public PrintWriter out;
 	private String command;
 	
 	/** Zmienna do ominiecia wyslania zadania do klienta. */
 	private boolean skipExecution = false;
 	
-
 	/** Pola ustawien - aktualny tryb gry (rozmiar planszy, typ przeciwnika). */
 	private Settings settings;
 	/** Pole aktywnej gry. */
 	private GameSession session;
-	private ClientHandler opponent;
 	
 /*---------------------------------------------------------------------------------------------*/
 
@@ -41,8 +39,7 @@ public class ClientHandler extends Thread {
 		setGameSession(null);
 	} // end ClientHandler constructor
 
-	/** Metoda watku run. Ustanawia polaczenie in, out. Obsluguje komunikacje. 
-	 * TODO: moze trzeba miec tablice out/in zeby nie mieszala sie komunikacja? chyba nie*/
+	/** Metoda watku run. Ustanawia polaczenie in, out. Obsluguje komunikacje. */
 	public void run() {
 		try {
 			System.out.println("Client connected.");
@@ -69,12 +66,19 @@ public class ClientHandler extends Thread {
 	/** Metoda obslugujaca komunikaty wyslane przez klienta. */
 	private void executeCommand(String command){
 		String execute = "OK";
-		if(command.startsWith("SETTINGS")){
+		skipExecution = false;
+		if(command.startsWith("OK")){ //aby ominac wszystkie ify
+		}else if(command.startsWith("GAME")){
+			skipExecution = true;	
+			session.doAction(command);
+		}else if(command.startsWith("SETTINGS")){
 			execute = "OPEN SETTINGS";
 		}else if(command.startsWith("EXIT")){
 			if(command.contains("GAME")){
 				execute = "EXIT GAME";
-				if(session != null) session.setState(GameSessionState.GameAborted);
+				if(session != null){
+					session.abortGame(this);
+				}
 			}
 			else { execute = "EXIT"; }
 		}else if(command.startsWith("CHANGE SETTINGS")){
@@ -82,16 +86,15 @@ public class ClientHandler extends Thread {
 			execute = "CLOSE SETTINGS"; 
 		}else if(command.startsWith("CLOSE SETTINGS")){
 			execute = "CLOSE SETTINGS"; 
-		}else if(command.startsWith("GAME")){
-				execute = getGameAction(command); 
 		}else if(command.startsWith("START")){
-			if(!server.matchmaker.addPlayer(this)){
+			if(!server.matchmaker.addPlayer(this, settings.boardSize, settings.opponentType)){
 				skipExecution = true;
+				/**TODO: waitng frame*/
 				//execute = "WAIT OPPONENT";
 			} // w przeciwnym wypadku gra powinna sie otworzyc. 
 		} 
 		
-		if(skipExecution){
+		if(skipExecution){	// jezeli gracz jest w grze, komende wysle do niego session
 			skipExecution = false;
 		}else{
 			out.println(execute); /* Wyslanie odpowiedniej komendy do klienta. */
@@ -111,7 +114,6 @@ public class ClientHandler extends Thread {
 	/** Metoda zaczyna gre u klienta. */
 	public void startGame(ClientHandler opponent, char color){
 		String execute = "OPEN BOARD " + settings.boardSize + " " + settings.opponentType + " " + color;
-		this.opponent = opponent;
 		out.println(execute); /* Wyslanie odpowiedniej komendy do klienta. */
 	}// end startGame
 	
@@ -120,19 +122,5 @@ public class ClientHandler extends Thread {
 		this.session = session;
 	}//end setGameSession
 	
-	/** Metoda do tworzenia instrukcji dla klientow w czasie gry. */
-	private String getGameAction(String command){
-		String execute = "OK";
-		if(command.contains("MOVED")){
-			int posXIndex = command.indexOf("POSX:");
-			String posX = command.substring(posXIndex+5, posXIndex+5+2) ;
-			int posYIndex = command.indexOf("POSY:");
-			String posY = command.substring(posYIndex+5, posYIndex+5+2) ;
-			System.out.println(posX + " " + posY);
-			execute = "GAME DISABLE BOARD";
-			opponent.out.println("GAME ENABLE BOARD NEWSTONE POSX:" + posX + " POSY:" + posY + " ");
-		}
-		return execute;
-	}// end getGameAction
 
 } // end ClientHandler CLASS

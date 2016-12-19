@@ -14,7 +14,7 @@ public class GoServer {
 	/** Pola obslugi klient-serwer. */
 	private final static int PORT = 8000;
 	private ServerSocket server = null;
-	protected HashSet<ClientHandler> clients = new HashSet<ClientHandler>();
+	protected static HashSet<ClientHandler> clients = new HashSet<ClientHandler>();
 	protected Matchmaker matchmaker = new Matchmaker();
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -32,14 +32,14 @@ public class GoServer {
 
 	/** Metoda glowna, tworzy nowy serwer. Wyswietla okno serwera (tylko dla wygody). */
 	public static void main(String[] args) {
-	    GoServer server = new GoServer();
+	    GoServer goServer = new GoServer();
 	    JFrame frame = new JFrame("GO SERVER");
 		frame.setResizable(false);	frame.setSize(200,200);
 		frame.addWindowListener( new WindowAdapter() { public void windowClosing(WindowEvent e) { System.exit(0); } } );
 		frame.setVisible(true);
         while(true){ /* Przyjmowanie nowych klientow. */
            try {
-			server.listenSocket();
+			goServer.listenSocket();
            } catch (IOException e1) { System.out.println("Error listening to socket.");	}
          }
 	} // end main
@@ -59,6 +59,6 @@ public class GoServer {
 		  System.out.println("Server shutdown.");
 	    } catch (IOException e) { System.out.println("Could not close server properly."); System.exit(-1); }
 	}// end finalize
-	
+		
 	
 }// end GoServer CLASS

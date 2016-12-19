@@ -3,28 +3,27 @@ package GoServer.GameSession;
 public class GameAbortedState implements GameSessionStateBehavior{
 
 	public GameSessionState getState() {
-		// TODO Auto-generated method stub
-		return null;
+		return GameSessionState.GameAborted;
 	}
 
-	public GameSessionStateBehavior blackMoved() {
-		// TODO Auto-generated method stub
-		return null;
+	public GameSessionStateBehavior blackMoved(){
+		return this;
 	}
 
-	public GameSessionStateBehavior whiteMoved() {
-		// TODO Auto-generated method stub
-		return null;
+	public GameSessionStateBehavior whiteMoved(){
+		return this;
 	}
 
-	public GameSessionStateBehavior gameFinished() {
-		// TODO Auto-generated method stub
-		return null;
+	public GameSessionStateBehavior gameFinished(){
+		return GameSessionState.GameFinished.getStateBehavior();
 	}
 
-	public GameSessionStateBehavior gameAborted() {
-		// TODO Auto-generated method stub
-		return null;
+	public GameSessionStateBehavior gameAborted(){
+		return GameSessionState.GameFinished.getStateBehavior();
+	}
+
+	public GameSessionStateBehavior territoryBargain() {
+		return this;
 	}
 
 }

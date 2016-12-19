@@ -8,6 +8,8 @@ public interface GameSessionStateBehavior {
 	GameSessionStateBehavior blackMoved();
 	
 	GameSessionStateBehavior whiteMoved();
+
+	GameSessionStateBehavior territoryBargain();
 	
 	GameSessionStateBehavior gameFinished();
 	

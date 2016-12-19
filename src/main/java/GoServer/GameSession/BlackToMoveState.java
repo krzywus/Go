@@ -15,11 +15,15 @@ public class BlackToMoveState implements GameSessionStateBehavior {
 	}
 		
 	public GameSessionStateBehavior gameFinished() {
-		return GameSessionState.GameFinished.getStateBehavior();
+		return this;
 	}
 
 	public GameSessionStateBehavior gameAborted() {
 		return GameSessionState.GameAborted.getStateBehavior();
+	}
+
+	public GameSessionStateBehavior territoryBargain() {
+		return GameSessionState.TerritoryBargain.getStateBehavior();
 	}
 
 }

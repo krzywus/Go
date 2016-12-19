@@ -1,38 +1,39 @@
 package GoClient;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.SpringLayout;
 import javax.swing.WindowConstants;
 
+/** Okno do gry - zawiera plansze oraz przyciski do pasowania, rezygnacji, informacji oraz panele z inforamcjami.*/
 public class BoardFrame extends JFrame {
 
-	/** Wymiary okna. */
-	/** TODO:	te wartosci do osobnego enuma ? (oprocz ostatnich - windowL i windowH)*/
-	public final static int smallBoardWindowLength 	= 730; // 9*50+80 na plansze, 200 na informacje o grze
-	public final static int smallBoardWindowHeight 	= 530;
-	public final static int mediumBoardWindowLength = 780; // 580 na plansze, 200 na informacje o grze
-	public final static int mediumBoardWindowHeight = 580;
-	public final static int bigBoardWindowLength 	= 880; // 680 na plansze, 200 na informacje o grze
-	public final static int bigBoardWindowHeight 	= 680;
-	public int windowLength, windowHeight;
+
 	/** Plansza do gry. */
-	private int boardSize;
-	private GameBoard board;
-	private JButton resign, pass;
-	private JLabel player1, player2;
+	protected int boardSize;
+	protected GameBoard board;
+	/** Klasa tworzaca wymiary i elementy okna. */
+	protected BoardFrameBuilder boardBuilder;	
+	/** Aktualny rozmiar planszy. */
+	protected int windowLength, windowHeight;
+	/** Element okna. */
+	protected JLabel inGameInfo;
 	/** Klient. */
-	private GoClient client;
+	protected GoClient client;
 	protected char playerColor;
+	/** MouseListener */
+	private BoardMouseAdapter mouseAdapter = new BoardMouseAdapter();
+	private BargainMouseAdapter bargainMouseAdapter = new BargainMouseAdapter();
+	/** Pole przechowuje infomarcje czy prowadzony jest targ o terytorium. */
+	protected boolean territoryBargain = false;
+	/** Obsluga targowania. */
+	protected BargainHandler bargainHandler;
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 
@@ -44,92 +45,43 @@ public class BoardFrame extends JFrame {
 		playerColor = color;
 		init();
 		boardSize = size;
-		chooseWindowSize();
+		boardBuilder.chooseWindowSize();
 		board = new GameBoard(this, boardSize, opponent);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		setSizes();		
-		addToFrame();
+		boardBuilder.setSizes();		
+		boardBuilder.addToFrame();
+		setResizable(true);
 		repaint();
 	} // end Board constructor
 	
 	/** Metoda do inicjalizacji pol. */
 	private void init(){
 		addWindowListener(new BoardWindowAdapter());
-		resign = new JButton("Resign"); resign.addActionListener(client);
-		pass = new JButton("Pass");		pass.addActionListener(client);
-		player1 = new JLabel("<html> White<br>  Player1</html>"); //html do wyrownywania tekstu
-		player2 = new JLabel("<html> Black<br>  Player2</html>"); //TODO: Player - clientID ?
+		boardBuilder = new BoardFrameBuilder(this);
+		boardBuilder.init();
 	} // end init
 	
 	/** Metoda dodaje obsluge myszy do okna. */
-	public void addMouseListener() {
-		addMouseListener(new MouseListener(){	// stworzyc instancje wczesniej,zeby nie tworzy duzo obiektow
-			public void mouseClicked (MouseEvent e) {
-				if(board.contains(e.getPoint())){ 
-					removeMouseListener(this);	// wylaczenie mozliwosci wysylania sygnalow przez myszke
-					System.out.println("PLAYER MOVED");
-					if(board.checkMoveValidity(e.getX(), e.getY())){  
-						int newStone[] = board.getBoardChange();
-						client.listener.actionPerformed(  // przeslanie do klienta
-								new ActionEvent(this, 0, 
-								"GAME PLAYER MOVED POSX:" + newStone[0] + " POSY:" + newStone[1] + " ")); 	
-					}else { addMouseListener(this); }
-				}
-			} // end mouseClicked
-			public void mouseEntered (MouseEvent e) {}
-			public void mouseExited	 (MouseEvent e) {}
-			public void mousePressed (MouseEvent e) {}
-			public void mouseReleased(MouseEvent e) {}
-		});
+	protected void addMouseListener() {
+		addMouseListener( mouseAdapter );
+	}// end addMouseListener	
+	
+	/** Metoda usuwa obsluge myszy do okna. */
+	protected void removeMouseListener() {
+		removeMouseListener( mouseAdapter );
 	}// end addMouseListener
-
-	/** Metoda ustala wielkosc okna w zaleznosci od rozmiaru planszy. */
-	private void chooseWindowSize(){
-		if(boardSize == 9){
-			windowLength = smallBoardWindowLength;
-			windowHeight = smallBoardWindowHeight;
-		}else if(boardSize == 13){
-			windowLength = mediumBoardWindowLength;
-			windowHeight = mediumBoardWindowHeight;
-		}else if(boardSize == 19){
-			windowLength = bigBoardWindowLength;
-			windowHeight = bigBoardWindowHeight;	
-		}		
-	} // end chooseWindowSize
 	
-	/** Ustawienie rozmiarow okna, planszy do gry oraz statystyk danej rozgrywki. */
-	private void setSizes(){
-		setSize(windowLength,windowHeight);
-		setLocation(300,50);
-		SpringLayout layout= new SpringLayout();
-		setLayout(layout);
-		/* Ustawienie zaleznosci w obrebie okna. */
-		Dimension boardDim= new Dimension(windowHeight, windowHeight);	board.setPreferredSize(boardDim);
-		Dimension playerLabelDim= new Dimension(windowLength - windowHeight, 50);	
-		player1.setPreferredSize(playerLabelDim); player2.setPreferredSize(playerLabelDim);
-		Dimension buttonDim= new Dimension(100, 30);	
-		resign.setPreferredSize(buttonDim); pass.setPreferredSize(buttonDim);
-		layout.putConstraint(SpringLayout.WEST,	board,	0,	SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, board,	0,	SpringLayout.NORTH, this);
-
-		layout.putConstraint(SpringLayout.WEST,		player1,	windowHeight,	SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, 	player1,	0,	SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.WEST,		player2,	windowHeight,	SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, 	player2,	windowHeight/10,	SpringLayout.NORTH, this);
-
-		layout.putConstraint(SpringLayout.WEST,		resign,	windowHeight+15,	SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH,	resign,	2*windowHeight/5,	SpringLayout.NORTH, this);
-		layout.putConstraint(SpringLayout.WEST,		pass,	windowHeight+15,	SpringLayout.WEST, this);
-		layout.putConstraint(SpringLayout.NORTH, 	pass,	2*windowHeight/5+50,	SpringLayout.NORTH, this);
-	} // end setSizes
+	/** Metoda dodaje obsluge myszy do okna w trakcie targu. */
+	protected void addBargainMouseListener() {
+		addMouseListener( bargainMouseAdapter );
+	}// end addMouseListener	
 	
-	/** Metoda dodajaca elementy do okna. */
-	private void addToFrame(){
-		add(board);		
-		add(player1);	add(player2);
-		add(resign);		add(pass);
-	} // end addToFrame
+	/** Metoda usuwa obsluge myszy do okna w trakcie targu. */
+	protected void removeBargainMouseListener() {
+		removeMouseListener( bargainMouseAdapter );
+	}// end addMouseListener
+	
 	
 	/** Metoda wykonujaca ruch przeciwnika na planszy. */
 	public void putOpponentStone(String posX, String posY){
@@ -139,7 +91,88 @@ public class BoardFrame extends JFrame {
 		int y = Integer.parseInt(posY);
 		board.putOpponentStone(x, y);
 	} // end putOpponentStone
+
+	/** Metoda zleca planszy usuniecie martwych kamieni. */
+	protected void deleteDeadStones(String posX, String posY){
+		if(posX.contains(" ")) posX = Character.toString( posX.charAt(0) );
+		if(posY.contains(" ")) posY = Character.toString( posY.charAt(0) );
+		int x = Integer.parseInt(posX);
+		int y = Integer.parseInt(posY);
+		board.deleteDeadStones(x, y);
+	}//end deleteDeadStones
 	
+	/** Metoda blokuje przyciski Resign oraz Pass po zakonczeniu gry.*/
+	protected void disableButtons(){
+		boardBuilder.resign.setEnabled(false);
+		boardBuilder.pass.setEnabled(false);
+		
+	}//end disableButtons
+	
+	/** Metoda odblokowuje przyciski Resign oraz Pass po zakonczeniu gry.*/
+	protected void enableButtons(){
+		boardBuilder.resign.setEnabled(true);
+		boardBuilder.pass.setEnabled(true);
+	}//end enableButtons
+	
+	/** Metoda zaczyna targowanie - zmienia dostepne przyciski w oknie, tworzy obsluge targowania. */
+	protected void startBargain(){
+		bargainHandler = new BargainHandler(board.getBoard(), boardSize);
+		this.removeMouseListener(); 
+		remove(boardBuilder.pass); remove(boardBuilder.resign); remove(boardBuilder.info);
+		add(boardBuilder.bargainAccept); add(boardBuilder.bargainDecline); add(boardBuilder.bargainSend);
+	} // end buttonChange
+	
+	/** Metoda resetuje mape alpha w BargainHandler. */
+	protected void resetAlphaBoard(){
+		bargainHandler.resetAlphaBoard();
+		bargainHandler.resetSelectedStones();
+		board.resetAlphaBoard();
+	}// end resetAlpgaBoard
+	
+	/** Metoda zaznacza kamienie zaznaczone przez przeciwnika. */
+	protected void markOpponentProposition(int positionX, int positionY){
+		Stone stoneBoard[][] = board.getBoard();
+		Stone stone = stoneBoard[positionX][positionY];
+		board.setAlphaBoard( bargainHandler.markStones(stone) );  
+		repaint();
+	}// end markOpponentProposition
+	
+/*-------------------------------------------------------------------------------------------------------------------*/	
+/** Klasa do obsługi przyciskow myszy na planszy. */
+	private class BoardMouseAdapter implements MouseListener{
+		public void mouseClicked (MouseEvent e) {
+			if(board.contains(e.getPoint())){ 
+				inGameInfo.setText("");
+				disableButtons();
+				removeMouseListener(this);	// wylaczenie mozliwosci wysylania sygnalow przez myszke
+				if(board.checkMoveValidity(e.getX(), e.getY())){  
+					int newStone[] = board.newStone;
+					client.listener.actionPerformed(  // przeslanie do klienta
+							new ActionEvent(this, 0, 
+							"GAME MOVE POSX:" + newStone[0] + " POSY:" + newStone[1] + " KILL ")); 	
+				}else { addMouseListener(this); }
+			}
+		} // end mouseClicked
+		public void mouseEntered (MouseEvent e) {}
+		public void mouseExited	 (MouseEvent e) {}
+		public void mousePressed (MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}
+	} // end BoardMouseAdapter/*-------------------------------------------------------------------------------------------------------------------*/	
+/** Klasa do obsługi przyciskow myszy na planszy w trakcie targu. */
+	private class BargainMouseAdapter implements MouseListener{
+		public void mouseClicked (MouseEvent e) {
+			if(board.contains(e.getPoint())){ 
+				/** TODO: jak w powyzszej klasie, odpowiednie zachowanie na klikniecia*/
+				board.setAlphaBoard( bargainHandler.markStones(board.getStone(e.getX(), e.getY())) );
+				board.repaint(); // TODO: check if works
+			}
+		} // end mouseClicked
+		public void mouseEntered (MouseEvent e) {}
+		public void mouseExited	 (MouseEvent e) {}
+		public void mousePressed (MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}
+	} // end BoardMouseAdapter
+/*-------------------------------------------------------------------------------------------------------------------*/	
 /** Klasa do obsługi zamykania okna. */
 private class BoardWindowAdapter extends WindowAdapter{
 	@Override
@@ -150,5 +183,6 @@ private class BoardWindowAdapter extends WindowAdapter{
         }
 	}		
 } // end BoardWindowAdapter
+
 
 }// end BoardFrame

@@ -28,6 +28,11 @@ public enum GameSessionState {
 		public GameSessionStateBehavior getStateBehavior() {
 			return new GameAbortedState();
 		}
+	},
+	TerritoryBargain {
+		public GameSessionStateBehavior getStateBehavior() {
+			return new TerritoryBargainState();
+		}
 	};
  
 	/** Default	 */

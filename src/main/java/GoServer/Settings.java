@@ -13,6 +13,6 @@ public class Settings {
 	/** */
 	Settings(){
 		boardSize = 9;
-		opponentType = 1;
+		opponentType = 0;
 	} // end Options constructor
 }
