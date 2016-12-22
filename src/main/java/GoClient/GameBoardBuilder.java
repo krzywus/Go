@@ -25,10 +25,13 @@ public class GameBoardBuilder {
 	/** Konstruktor klasy*/
 	GameBoardBuilder(GameBoard board){
 		this.board = board;
+		setStoneSize();		
+		drawBoard();	
+		drawStones();
 	}//end GameBoardBuilder constr
 	
 	/** Metoda ustawia wielkosc kamieni do rysowania.*/
-	protected void setStoneSize(){
+	private void setStoneSize(){
 		if(board.gameSize == 9 ) board.stoneSize = 56;
 		else if(board.gameSize == 13 ) board.stoneSize = 42;
 		else if(board.gameSize == 19 ) board.stoneSize = 33;
@@ -36,7 +39,7 @@ public class GameBoardBuilder {
 	
 	
 	/** Metoda wczytujaca obraz. */
-	protected BufferedImage loadImage(String imageURL){ 
+	private BufferedImage loadImage(String imageURL){ 
 		Image objectImage = Toolkit.getDefaultToolkit().getImage(imageURL);		
 		//dopoki obraz nie bedzie calkowicie zaladowany
 		while(!Toolkit.getDefaultToolkit().prepareImage(objectImage, -1, -1, null)){}
@@ -47,7 +50,7 @@ public class GameBoardBuilder {
 	} // end loadImage
 	
 	/** Metoda rysujaca obraz w boardBI. */
-	protected void drawBoard(){
+	private void drawBoard(){
 		rect = new Rectangle2D.Float(0,0, board.getWidth()-80, board.getHeight()-80);
 		board.boardBI = loadImage(boardImgPath + board.gameSize + "x" + board.gameSize + ".png");
 		boardTexture = new TexturePaint(board.boardBI, rect);
@@ -60,7 +63,7 @@ public class GameBoardBuilder {
 
 	
 	/** Metoda tworzaca tekstury kamieni. */
-	protected void drawStones(){
+	private void drawStones(){
 		rect = new Rectangle2D.Float(0,0, board.stoneSize, board.stoneSize);
 		board.WStoneBI = loadImage(WstoneImgPath);
 		board.BStoneBI = loadImage(BstoneImgPath);

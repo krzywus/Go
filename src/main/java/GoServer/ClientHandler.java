@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import GoServer.GameSession.GameSession;
-import GoServer.GameSession.GameSessionState;
 
 /** Klasa do obslugi klientow - kazdy klient posiada osobny watek (obiekt).
 * W obrebie tego watku zachodzi komunikacja miedzy klientem i serwerem. */
@@ -16,7 +15,7 @@ public class ClientHandler extends Thread {
 	/** Pola do obslugi klient-serwer. */
 	private GoServer server;
 	private Socket socket;
-	private BufferedReader in;
+	protected BufferedReader in;
 	public PrintWriter out;
 	private String command;
 	
@@ -34,7 +33,7 @@ public class ClientHandler extends Thread {
 	ClientHandler(Socket socket, GoServer server){
 		this.socket = socket;
 		this.server= server;
-		this.server.clients.add(this);
+		GoServer.clients.add(this);
 		settings = new Settings();
 		setGameSession(null);
 	} // end ClientHandler constructor
@@ -57,7 +56,7 @@ public class ClientHandler extends Thread {
 		}catch (IOException e){	System.out.println("Client disconnected with Server.");
 		}finally{
 			try {
-				server.clients.remove(this);
+				GoServer.clients.remove(this);
 				socket.close();
 			} catch (IOException e) { System.out.println("Error in closing socket. Server shutdown."); System.exit(-1);}
 		}
@@ -89,7 +88,7 @@ public class ClientHandler extends Thread {
 		}else if(command.startsWith("START")){
 			if(!server.matchmaker.addPlayer(this, settings.boardSize, settings.opponentType)){
 				skipExecution = true;
-				/**TODO: waitng frame*/
+				/**TODO: waiting frame*/
 				//execute = "WAIT OPPONENT";
 			} // w przeciwnym wypadku gra powinna sie otworzyc. 
 		} 

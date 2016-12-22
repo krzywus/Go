@@ -6,14 +6,13 @@ import java.awt.event.WindowEvent;
 /**
  * Klasa obslugujaca przyciski glowne okna.
  * Umozliwia wylaczenie okna.
- * @author krzywus
- * @version 1.1
+ * @author Filip Krzywka
  */
-public class MyWindowAdapter extends WindowAdapter {
+public class WindowClose extends WindowAdapter {
 	
 	private GoClient client;
 	
-	MyWindowAdapter(GoClient client){
+	WindowClose(GoClient client){
 		super();
 		this.client = client;
 	}

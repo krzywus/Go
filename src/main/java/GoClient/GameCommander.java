@@ -38,7 +38,7 @@ public class GameCommander {
 	
 	
 	/** Metoda wykonuje akcje zwiazana z ruchem gracza. */
-	protected void executeEnabledCommand(String command){ 
+	private void executeEnabledCommand(String command){ 
 		boardFrame.addMouseListener();
 		boardFrame.enableButtons();
 		boardFrame.inGameInfo.setText("Your move.");
@@ -54,7 +54,7 @@ public class GameCommander {
 	
 	
 	/** Metoda wykonuje akcje zwiazana z  */
-	protected void executeAbortCommand(String command){ 
+	private void executeAbortCommand(String command){ 
 		boardFrame.removeMouseListener();
 		boardFrame.disableButtons();
 		boardFrame.inGameInfo.setText("Enemy resigned.");
@@ -67,7 +67,7 @@ public class GameCommander {
 	
 	
 	/** Metoda wykonuje akcje zwiazana z targiem o terytorium. */
-	protected void executeBargainCommand(String command){ // TODO: implement
+	private void executeBargainCommand(String command){
 		if(command.contains("START")){
 			boardFrame.territoryBargain= true;
 			boardFrame.startBargain();				
@@ -105,7 +105,7 @@ public class GameCommander {
 	
 	
 	/** Metoda wykonuje akcje zwiazana z pasowaniem gracza */
-	protected void executePassCommand(String command){ 
+	private void executePassCommand(String command){ 
 		boardFrame.addMouseListener();
 		boardFrame.enableButtons();
 		boardFrame.inGameInfo.setText("Enemy passed.");
@@ -113,7 +113,7 @@ public class GameCommander {
 	
 	
 	/** Metoda wykonuje akcje zwiazana z  */
-	protected void executeFinishCommand(String command){ 
+	private void executeFinishCommand(String command){ 
 		boardFrame.disableButtons();
 		String text;
 		if(command.contains("WIN")) text = "<html>Game finished.<br>You WIN.</html>";

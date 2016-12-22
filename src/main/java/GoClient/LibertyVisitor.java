@@ -99,45 +99,24 @@ public class LibertyVisitor {
 		return liberty;
 	} // end getLiberty
 	
-	/** Metoda sprawdza czy ruch samobojczy jest dozwolony - czy kamien zabiera ostatni oddech innemu.
-	 * TODO: gdyby cos nie dzialalo, sprobowac z zakomentowanymi*/
+	/** Metoda sprawdza czy ruch samobojczy jest dozwolony - czy kamien zabiera ostatni oddech innemu.*/
 	public boolean isSuicidal(Stone stone){
 		int posX = stone.positionX;
 		int posY = stone.positionY;
 		char playerColor = stone.color;
 		if(posX-1 >= 0 && board[posX-1][posY].color != playerColor){
-			/*Stone tempBoard[][] = getTempBoard(); 
-			tempBoard[posX][posY].color = playerColor;
-			LibertyVisitor visitor = new LibertyVisitor(tempBoard, gameSize);
-			tempBoard[posX-1][posY].accept(visitor);
-			if(tempBoard[posX-1][posY].liberty == 0) return false;*/
 			board[posX-1][posY].accept(this); // kamien w lewo
 			if(board[posX-1][posY].liberty == 0) return false;
 		}
 		if(posY-1 >= 0 && board[posX][posY-1].color != playerColor){
-			/*Stone tempBoard[][] = getTempBoard(); 
-			tempBoard[posX][posY].color = playerColor;
-			LibertyVisitor visitor = new LibertyVisitor(tempBoard, gameSize);
-			tempBoard[posX][posY-1].accept(visitor);
-			if(tempBoard[posX][posY-1].liberty == 0) return false;*/
 			board[posX][posY-1].accept(this);  //kamien w gore
 			if(board[posX][posY-1].liberty == 0) return false;
 		}
 		if(posX+1 < gameSize && board[posX+1][posY].color != playerColor){
-			/*Stone tempBoard[][] = getTempBoard(); 
-			tempBoard[posX][posY].color = playerColor;
-			LibertyVisitor visitor = new LibertyVisitor(tempBoard, gameSize);
-			tempBoard[posX+1][posY].accept(visitor);
-			if(tempBoard[posX+1][posY].liberty == 0) return false;*/
 			board[posX+1][posY].accept(this); ; //kamien w prawo
 			if(board[posX+1][posY].liberty == 0) return false;
 		}
 		if(posY+1 < gameSize && board[posX][posY+1].color != playerColor){
-			/*Stone tempBoard[][] = getTempBoard(); 
-			tempBoard[posX][posY].color = playerColor;
-			LibertyVisitor visitor = new LibertyVisitor(tempBoard, gameSize);
-			tempBoard[posX][posY+1].accept(visitor);
-			if(tempBoard[posX][posY+1].liberty == 0) return false;*/
 			board[posX][posY+1].accept(this);  //kamien w dol
 			if(board[posX][posY+1].liberty == 0) return false;
 		}

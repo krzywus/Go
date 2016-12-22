@@ -34,7 +34,7 @@ public class SettingsFrame extends JFrame implements ActionListener{
 	SettingsFrame(GoClient client){
 		super();
 		this.client = client;
-		addWindowListener(new MyWindowAdapter(client));
+		addWindowListener(new WindowClose(client));
 		init();
 		smallSizeBox.setSelected(true);		smallSizeBox.setEnabled(false);
 		otherClientBox.setSelected(true); 	otherClientBox.setEnabled(false);
@@ -135,24 +135,24 @@ public class SettingsFrame extends JFrame implements ActionListener{
 	/** Metoda do pilnowania checkboxow. */
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource() == AIBox){ 
-			if(AIBox.isSelected()) AIBox.setEnabled(false);
+			AIBox.setSelected(true); AIBox.setEnabled(false);
 			otherClientBox.setSelected(false); otherClientBox.setEnabled(true);
 		}else if(e.getSource() == otherClientBox){ 
-			if(otherClientBox.isSelected()) otherClientBox.setEnabled(false);
+			otherClientBox.setSelected(true); otherClientBox.setEnabled(false);
 			AIBox.setSelected(false); AIBox.setEnabled(true); 
 		}
 		if(e.getSource() == smallSizeBox){
-			smallSizeBox.setEnabled(false);
+			smallSizeBox.setSelected(true);	smallSizeBox.setEnabled(false);
 			mediumSizeBox.setSelected(false);	mediumSizeBox.setEnabled(true);
 			bigSizeBox.setSelected(false);		bigSizeBox.setEnabled(true);
 		}		
 		if(e.getSource() == mediumSizeBox){
-			mediumSizeBox.setEnabled(false);
+			mediumSizeBox.setSelected(true);	mediumSizeBox.setEnabled(false);
 			smallSizeBox.setSelected(false);	smallSizeBox.setEnabled(true);
 			bigSizeBox.setSelected(false);		bigSizeBox.setEnabled(true);
 		}		
 		if(e.getSource() == bigSizeBox){
-			bigSizeBox.setEnabled(false);
+			bigSizeBox.setSelected(true);		bigSizeBox.setEnabled(false);
 			smallSizeBox.setSelected(false);	smallSizeBox.setEnabled(true);
 			mediumSizeBox.setSelected(false);	mediumSizeBox.setEnabled(true);
 		}

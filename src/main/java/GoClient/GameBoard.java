@@ -3,8 +3,9 @@ package GoClient;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+
 import javax.swing.JPanel;
 
 /** Plansza do gry. Obsluguje poprawnosc ruchow zglaszanych przez graczy. Rysuje kamienie na planszy. */
@@ -13,9 +14,9 @@ public class GameBoard extends JPanel {
 	/** Pola do obslugi grafiki.  */
 	protected Graphics2D g2d;
 	protected BufferedImage boardBI, BStoneBI, alphaBStoneBI, WStoneBI, alphaWStoneBI;	
-	protected Rectangle2D.Float rect;
 	/** Klasa tworzaca grafike do gry. */
-	GameBoardBuilder gameBuilder;
+	@SuppressWarnings("unused")
+	private GameBoardBuilder gameBuilder;
 	
 	/** Ustawienia planszy. */
 	protected int gameSize;	// size of game {9x9, 13x13, 19x19}
@@ -36,14 +37,10 @@ public class GameBoard extends JPanel {
 /*-------------------------------------------------------------------------------------------------------------------*/
 	
 	/** Konstruktor. Tworzy plansze. */
-	GameBoard(BoardFrame frame, int gameSize, int opponentType){
+	GameBoard(BoardFrame frame, int gameSize){
 		super();
 		this.frame = frame;
 		this.gameSize = gameSize;
-		gameBuilder = new GameBoardBuilder(this);
-		gameBuilder.setStoneSize();
-		setDoubleBuffered(true);
-		setFocusable(true);
 		init();
 	} // end GameBoard constructor
 
@@ -59,8 +56,9 @@ public class GameBoard extends JPanel {
 				BOARD[i][j] = new Stone('N', i, j);
 			}
 		}
-		gameBuilder.drawBoard();	// narysuj plansze w buforze boardBI
-		gameBuilder.drawStones();
+		gameBuilder = new GameBoardBuilder(this);
+		setDoubleBuffered(true);
+		setFocusable(true);
 		repaint();
 	} // end init
 	
@@ -91,7 +89,7 @@ public class GameBoard extends JPanel {
 										
 					if( BOARD[i][j].color == 'B'){
 						if(!alphaBoard[i][j]) g.drawImage(BStoneBI,0,0, null);		// rysowanie kamienia
-						else 				  g.drawImage(alphaBStoneBI,0,0, null);
+						else 				  g.drawImage(alphaBStoneBI,0,0, null); // rysowanie kamienia zaznaczonego podcas targu (przeswitujacy)
 					}else{
 						if(!alphaBoard[i][j]) g.drawImage(WStoneBI,0,0, null);		// rysowanie kamienia
 						else 				  g.drawImage(alphaWStoneBI,0,0, null);
@@ -108,6 +106,7 @@ public class GameBoard extends JPanel {
 	protected boolean checkMoveValidity(int x, int y){
 		int stonePositionX = (x-40+stoneSize/2)/(stoneSize);
 		int stonePositionY = (y-40+stoneSize/2)/(stoneSize);
+		if(stonePositionX >= gameSize || stonePositionY >= gameSize) return false;
 		if(BOARD[stonePositionX][stonePositionY].color == 'N'){
 			Stone tempBoard[][] = new Stone[gameSize][gameSize]; 
 			for(int i = 0; i <  gameSize; i++){	for(int j = 0; j <  gameSize; j++){	// skopiuj poprzednia plansze
@@ -131,8 +130,7 @@ public class GameBoard extends JPanel {
 			BOARD[stonePositionX][stonePositionY] = new Stone(frame.playerColor, stonePositionX, stonePositionY);
 			newStone[0] = stonePositionX; newStone[1] = stonePositionY;
 			deleteDeadStones(stonePositionX, stonePositionY);
-
-					
+				
 			repaint();
 			return true;
 		}else return false;
@@ -145,10 +143,14 @@ public class GameBoard extends JPanel {
 		deadStonesNumber = visitor.deleteDeadStones(stonePositionX, stonePositionY);
 		if(deadStonesNumber == 1){ 
 			koMark = true;
-			if(BOARD[stonePositionX-1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX-1; koStone[1] = stonePositionY; }
-			if(BOARD[stonePositionX+1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX+1; koStone[1] = stonePositionY; }
-			if(BOARD[stonePositionX][stonePositionY-1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY-1; }
-			if(BOARD[stonePositionX][stonePositionY+1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY+1; }
+			if(stonePositionX-1 >= 0)
+				if(BOARD[stonePositionX-1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX-1; koStone[1] = stonePositionY; }
+			if(stonePositionX+1 < gameSize)
+				if(BOARD[stonePositionX+1][stonePositionY].color == 'N'){ koStone[0] = stonePositionX+1; koStone[1] = stonePositionY; }
+			if(stonePositionY-1 >= 0)
+				if(BOARD[stonePositionX][stonePositionY-1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY-1; }
+			if(stonePositionY+1 < gameSize)
+				if(BOARD[stonePositionX][stonePositionY+1].color == 'N'){ koStone[0] = stonePositionX; koStone[1] = stonePositionY+1; }
 		}
 	} // end deleteDeadStone
 
@@ -161,20 +163,25 @@ public class GameBoard extends JPanel {
 	protected void putOpponentStone(int x, int y) {
 		if(frame.playerColor == 'W') BOARD[x][y]=new Stone('B', x, y);
 		else  						 BOARD[x][y]=new Stone('W', x, y);
-		//backupBoard();
 	}// end putOpponentStone
 
 	/** Metoda zwraca aktualna plansze. */
 	protected Stone[][] getBoard(){
-		return BOARD;
+		return Arrays.copyOf( BOARD , BOARD.length);
 	}// end getBoard
 	
-	/** Metoda zwraca kamien na danej pozycji. */
+	/** Metoda zwraca kamien na danej pozycji (x, y - punkty na panelu). */
 	protected Stone getStone(int x, int y){
 		int stonePositionX = (x-40+stoneSize/2)/(stoneSize);
 		int stonePositionY = (y-40+stoneSize/2)/(stoneSize);
 		return BOARD[stonePositionX][stonePositionY];
 	}// end getStone
+	
+	/** Metoda zwraca kamien na danej pozycji. */
+	protected Stone getStoneFromBoard(int x, int y){
+		return BOARD[x][y];
+	}// end getStone
+	
 	
 	/** Metoda resetuje kanaly alpha na planszy. */
 	protected void resetAlphaBoard(){

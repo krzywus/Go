@@ -6,7 +6,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.SpringLayout;
 
-public class MainMenu extends JFrame {
+public class MainMenu extends JFrame{
 
 	/** Wymiary okna. */
 	private final static int windowLength = 450;
@@ -23,9 +23,9 @@ public class MainMenu extends JFrame {
 		super();
 		setTitle("Game");
 		this.client = client;
-		addWindowListener(new MyWindowAdapter(this.client));
+		addWindowListener(new WindowClose(this.client));
 	
-		addButtons();
+		addElements();
 		setSizes();
 		repaint();
 	} // end MainMenu constructor
@@ -51,7 +51,7 @@ public class MainMenu extends JFrame {
 	} // end setSizes
 
 	/** Metoda tworzaca i dodajaca przyciski do okna. */
-	private void addButtons(){
+	private void addElements(){
 		startGame = new JButton("Start New Game");	startGame.addActionListener(client);
 		options = new JButton("Options");			options.addActionListener(client);
 		exit = new JButton("Exit");					exit.addActionListener(client);

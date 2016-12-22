@@ -37,18 +37,14 @@ public class BoardFrame extends JFrame {
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 
-	/** Konstruktor. Tworzy okno oraz plansze do gry.
-	 * 	TODO: panel z statystykami*/
-	BoardFrame(GoClient client, int size, int opponent, char color){
+	/** Konstruktor. Tworzy okno oraz plansze do gry.*/
+	BoardFrame(GoClient client, int size, char color){
 		super();
 		this.client = client;
 		playerColor = color;
-		init();
 		boardSize = size;
-		boardBuilder.chooseWindowSize();
-		board = new GameBoard(this, boardSize, opponent);
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
+		init();
+		board = new GameBoard(this, boardSize);
 		boardBuilder.setSizes();		
 		boardBuilder.addToFrame();
 		setResizable(true);
@@ -58,8 +54,8 @@ public class BoardFrame extends JFrame {
 	/** Metoda do inicjalizacji pol. */
 	private void init(){
 		addWindowListener(new BoardWindowAdapter());
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		boardBuilder = new BoardFrameBuilder(this);
-		boardBuilder.init();
 	} // end init
 	
 	/** Metoda dodaje obsluge myszy do okna. */
@@ -84,7 +80,7 @@ public class BoardFrame extends JFrame {
 	
 	
 	/** Metoda wykonujaca ruch przeciwnika na planszy. */
-	public void putOpponentStone(String posX, String posY){
+	protected void putOpponentStone(String posX, String posY){
 		if(posX.contains(" ")) posX = Character.toString( posX.charAt(0) );
 		if(posY.contains(" ")) posY = Character.toString( posY.charAt(0) );
 		int x = Integer.parseInt(posX);
@@ -142,10 +138,10 @@ public class BoardFrame extends JFrame {
 	private class BoardMouseAdapter implements MouseListener{
 		public void mouseClicked (MouseEvent e) {
 			if(board.contains(e.getPoint())){ 
-				inGameInfo.setText("");
-				disableButtons();
 				removeMouseListener(this);	// wylaczenie mozliwosci wysylania sygnalow przez myszke
-				if(board.checkMoveValidity(e.getX(), e.getY())){  
+				if(board.checkMoveValidity(e.getX(), e.getY())){ 
+					inGameInfo.setText("");
+					disableButtons(); 
 					int newStone[] = board.newStone;
 					client.listener.actionPerformed(  // przeslanie do klienta
 							new ActionEvent(this, 0, 
@@ -162,9 +158,8 @@ public class BoardFrame extends JFrame {
 	private class BargainMouseAdapter implements MouseListener{
 		public void mouseClicked (MouseEvent e) {
 			if(board.contains(e.getPoint())){ 
-				/** TODO: jak w powyzszej klasie, odpowiednie zachowanie na klikniecia*/
 				board.setAlphaBoard( bargainHandler.markStones(board.getStone(e.getX(), e.getY())) );
-				board.repaint(); // TODO: check if works
+				board.repaint(); 
 			}
 		} // end mouseClicked
 		public void mouseEntered (MouseEvent e) {}

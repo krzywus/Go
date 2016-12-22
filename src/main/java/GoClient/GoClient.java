@@ -15,27 +15,33 @@ import javax.swing.Timer;
 
 /** 
  * 
- * TODO: PROTOKOL KOMUNIKACJI na diagramie?
+ * TODO: waiting frame!!
  * TODO: Przycisk BackToGame podczas bargain
  * TODO: AI!!
  * TODO: szybkosc gry zwalnia z czasem.. jakies zapychanie socketa? juz chyba nie
  * TODO: info
+ * TODO: komentarze - z @ author, return, params moze tez
  * 
  * */
 
+/** Client main class. */
 public class GoClient implements ActionListener{
 
 	/** Pola obslugi klient-serwer. */
 	private final static int PORT = 8000;
 	private Socket socket;
-	public PrintWriter out;
+	/** Pole do komunikacji z serwerem. */
+	public PrintWriter out;  
 	public BufferedReader in;
 	
 	/** Pola GUI. */
 	private MainMenu mainMenu;
 	protected BoardFrame boardFrame;
 	private SettingsFrame settings;
+	
+	/** Nasluchiwacz polecen od serwera w czasie gry. */
 	protected ActionListener listener;
+	/** Pole obslugujace komunikacje z serwerem w czasie gry. */
 	private GameCommander gameCommander;
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
@@ -139,14 +145,13 @@ public class GoClient implements ActionListener{
 	
 	/** Metoda otwiera okno z gra z odpowiednimi ustawieniami. */
 	private void openBoard(String command){
-		int size, opponent;
+		int size;
 		char color;
-		if(command.contains("AI")) opponent = 1; else opponent = 0;
 		if(command.contains("19")) size = 19;
 		else if(command.contains("13")) size = 13; else size = 9;
 		if(command.contains("W"))color = 'W'; else color = 'B'; 
 		mainMenu.setVisible(false);
-		boardFrame = new BoardFrame(this, size, opponent, color); 
+		boardFrame = new BoardFrame(this, size, color); 
 		if(color == 'B'){ boardFrame.inGameInfo.setText("Your move."); boardFrame.enableButtons();	
 		}else { boardFrame.inGameInfo.setText("Black to move"); boardFrame.disableButtons(); }
 		boardFrame.setVisible(true);
@@ -155,7 +160,8 @@ public class GoClient implements ActionListener{
 	} // end openBoard
 	
 	
-	/** Metoda pobiera ustawienia z okna i przekazuje jako komende. */
+	/** Metoda pobiera ustawienia z okna i przekazuje jako komende.
+	 * @return string with selected settings in settings frame*/
 	private String createSettingsString(){
 		String command = "CHANGE SETTINGS";
 		if(settings.AIBox.isSelected()) 		 command += " AI";

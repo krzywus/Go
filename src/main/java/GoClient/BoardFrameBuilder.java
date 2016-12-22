@@ -32,10 +32,12 @@ public class BoardFrameBuilder {
 	/** Konstrutkor klasy. */
 	BoardFrameBuilder(BoardFrame frame){
 		this.frame = frame;
+		init();
+		chooseWindowSize();
 	}//end BoardFrameBuilder constr
 	
 	/** Metoda do inicjalizacji pol. */
-	protected void init(){
+	private void init(){
 		resign  		 = new JButton("Resign"); 	resign.addActionListener(frame.client);
 		pass 			 = new JButton("Pass");		pass.addActionListener(frame.client);
 		bargainAccept	 = new JButton("Accept"); 	bargainAccept.addActionListener(frame.client);
@@ -44,16 +46,16 @@ public class BoardFrameBuilder {
 		info			 = new JButton("INFO"); 	info.addActionListener(frame.client);
 		if(frame.playerColor == 'W'){
 			player1 = new JLabel("<html> Black<br>  Opponent</html>"); //TODO: Player - clientID ?
-			player2 = new JLabel("<html> White<br>  You</html>"); //html do wyrownywania tekstu
+			player2 = new JLabel("<html> White<br>  You<br> Komi: 6.5</html>"); //html do wyrownywania tekstu
 		}else{
 			player1 = new JLabel("<html> Black<br>  You</html>"); 
-			player2 = new JLabel("<html> White<br>  Opponent</html>"); //html do wyrownywania tekstu
+			player2 = new JLabel("<html> White<br>  Opponent<br> Komi: 6.5</html>"); //html do wyrownywania tekstu
 		}
-		frame.inGameInfo = new JLabel("");
+		frame.inGameInfo = new JLabel("");	
 	}// end init
 	
 	/** Metoda ustala wielkosc okna w zaleznosci od rozmiaru planszy. */
-	protected void chooseWindowSize(){
+	private void chooseWindowSize(){
 		if(frame.boardSize == 9){
 			frame.windowLength = smallBoardWindowLength;
 			frame.windowHeight = smallBoardWindowHeight;			

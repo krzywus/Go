@@ -1,12 +1,7 @@
 package GoServer.GameSession;
 
 
-public enum GameSessionState {
-	//TODO: Comment the following definitions 
-	//OFF, ON, STOPPED, STARTED, UNKNOW;
-	
-	//TODO: Uncomment the following block of code
-	
+public enum GameSessionState {	
 	
 	
 	WhiteToMove {

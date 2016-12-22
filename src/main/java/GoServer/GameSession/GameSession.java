@@ -10,7 +10,7 @@ import GoServer.ClientHandler;
  * 		WhiteToMove - gracz bialy wykonuje ruch, okno czarnego zablokowane.
  * 		BlackToMove - gracz czarny wykonuje ruch, okno bialego zablokowane.
  * 		GameFinished - gracze otrzymuja informacje o wyniku rozgrywki, plansze zablokowane. 
- * 		TODO: TerritoryBargain - gracze targuja sie o terytorium.  */
+ * 		territoryBargain - gracze targuja sie o terytorium.  */
 public class GameSession {
 	
 	private static Random RAND = new Random();
@@ -51,6 +51,18 @@ public class GameSession {
 	/** Metoda ustawia stan gry. */
 	public void setState(GameSessionState newState){
 		this.state = newState.getStateBehavior();
+	}// end setState
+	
+	/** Metoda zwraca stan gry. 
+	 * @return aktualny stan gry*/
+	public GameSessionState getState(){
+		return this.state.getState();
+	}// end setState
+	
+	/** Metoda zwraca stan gry. 
+	 * @return aktualny stan gry*/
+	public GameSessionStateBehavior getStateBehavior(){
+		return this.state.getState().getStateBehavior();
 	}// end setState
 	
 	/** Metoda do obslugi komunikacji miedzy klientami.

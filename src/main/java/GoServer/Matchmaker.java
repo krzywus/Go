@@ -1,11 +1,11 @@
 package GoServer;
 
 import GoServer.GameSession.GameSession;
-
+/** Class join players into games. Design pattern: Singleton. */
 public class Matchmaker{
 	
-	/** TODO: Singleton? */
-	
+	/** Singleton. */
+	private static volatile Matchmaker instance;
 	/** Tablica do laczenia klientow w pary*/
 	private ClientHandler smallBoardPlayer[];
 	private ClientHandler mediumBoardPlayer[];
@@ -15,11 +15,25 @@ public class Matchmaker{
 /*-------------------------------------------------------------------------------------------------------------------*/
 	
 	/**Konstruktor klasy, inicjuje obiekty.*/
-	Matchmaker(){
+	private Matchmaker(){
 		smallBoardPlayer	= new ClientHandler[2];
 		mediumBoardPlayer 	= new ClientHandler[2];
 		bigBoardPlayer 		= new ClientHandler[2];
 	}// end Matchmaker constr
+	
+	/** Metoda implementujaca wzorzezc singleton. Zwraca instancje klasy. */
+	public static Matchmaker getInstance() {
+		Matchmaker result = instance;
+		if (result == null) {
+			synchronized(Matchmaker.class){
+				result = instance;
+				if(result == null){
+					instance = result = new Matchmaker();
+				}
+			}
+		}
+		return result;
+	}// end getInstance
 	
 	
 	/** Metoda laczy graczy w pary na podstawie ustawien. Kiedy para jest polaczona rozpoczyna gre dla tej pary. */
@@ -36,6 +50,7 @@ public class Matchmaker{
 				smallBoardPlayer[1]=player;
 				if(smallBoardPlayer[0] != null && smallBoardPlayer[1] != null){
 					GameSession session = new GameSession(smallBoardPlayer[0], smallBoardPlayer[1]);
+					System.out.println("New 9x9 Game Started.");
 				}
 				smallBoardPlayer[0] = null;
 				smallBoardPlayer[1] = null;
@@ -49,6 +64,7 @@ public class Matchmaker{
 				mediumBoardPlayer[1]=player;
 				if(mediumBoardPlayer[0] != null && mediumBoardPlayer[1] != null){
 					GameSession session = new GameSession(mediumBoardPlayer[0], mediumBoardPlayer[1]);
+					System.out.println("New 13x13 Game Started.");
 				}
 				mediumBoardPlayer[0] = null;
 				mediumBoardPlayer[1] = null;
@@ -62,6 +78,7 @@ public class Matchmaker{
 				bigBoardPlayer[1]=player;
 				if(bigBoardPlayer[0] != null && bigBoardPlayer[1] != null){
 					GameSession session = new GameSession(bigBoardPlayer[0], bigBoardPlayer[1]);
+					System.out.println("New 19x19 Game Started.");
 				}
 				bigBoardPlayer[0] = null;
 				bigBoardPlayer[1] = null;
