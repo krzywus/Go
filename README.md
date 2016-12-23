@@ -22,9 +22,17 @@ In class Matchmaker - singleton.<br />
 In class LibertyVisitor - visitor.<br />
 In AI player implementation - strategy ( not yet implemented into system )<br />
 
+
 ####AI<br />
 Bot implements strategy design pattern in which he chooses strategy to evaluate every field on the map.<br />
 Then he chooses move from one of the highest evalueted fields. <br />
 Evaluating fields is almost completely implemented as well as 2 sample strategies. <br />
 However bot is not yet connected to system in any way. Possible is only testing strategies (how they evaluate field
 in bots Main class by edditing board on which bots computes ( you have to edit it by hand ).
+
+#####Documentation<br />
+In docs folder you can find few UML diagrams ilustrating the sytem.<br />
+
+
+######Testing<br />
+Project contains few JUnit test, few of which use Mockito.
