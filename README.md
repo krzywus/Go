@@ -14,7 +14,7 @@ Counting territory is not yet implemented, so its up to players to conclude who 
 #####To try game: <br />
 1. Run GoServer<br />
 2. Run GoClient and start game with selected settings.<br />
-3. Run another GoClient.
+3. Run another GoClient and start game with the same settings.
 
 ####Used design patterns: <br />
 In class GameSession - state.<br />
