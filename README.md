@@ -1,6 +1,6 @@
 # Go
 
-#Student project implementing board game Go in Java.
+####Student project implementing board game Go in Java.
 
 Game uses client-server architecture. Clients connect with server and communicate with it by ClientHandler class.<br />
 Players can choose board size in settings menu. Playing against AI is not yet implemented.<br />
@@ -11,18 +11,18 @@ board and sends his proposition to white. White then can either decline the offe
 declines, its his turn to make proposition to black. If any player accepts other side offer, game ends.<br />
 Counting territory is not yet implemented, so its up to players to conclude who won.<br />
 
-#o try game: <br />
+#####To try game: <br />
 1. Run GoServer<br />
 2. Run GoClient and start game with selected settings.<br />
 3. Run another GoClient.
 
-#Used design patterns: <br />
+####Used design patterns: <br />
 In class GameSession - state.<br />
 In class Matchmaker - singleton.<br />
 In class LibertyVisitor - visitor.<br />
 In AI player implementation - strategy ( not yet implemented into system )<br />
 
-#AI<br />
+####AI<br />
 Bot implements strategy design pattern in which he chooses strategy to evaluate every field on the map.<br />
 Then he chooses move from one of the highest evalueted fields. <br />
 Evaluating fields is almost completely implemented as well as 2 sample strategies. <br />
