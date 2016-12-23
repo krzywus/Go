@@ -4,17 +4,17 @@ package GoClient;
 public class Stone {
 	
 	/** Aktualny kolor kamienia. */
-	protected char color;				// N - no alignment, B - black, W - white
+	public char color;				// N - no alignment, B - black, W - white
 	/** Pozycja kamienia na planszy. */
 	protected int positionX, positionY;	
 	/** Liczba oddechow kamienia. */
-	protected int liberty;	
+	public int liberty;	
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 	
 	/** Konstruktor klasy. */
-	Stone(char color, int x, int y){
+	public Stone(char color, int x, int y){
 		this.color = color;
 		positionX = x;
 		positionY = y;

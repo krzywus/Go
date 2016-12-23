@@ -15,11 +15,9 @@ import javax.swing.Timer;
 
 /** 
  * 
- * TODO: waiting frame!!
  * TODO: Przycisk BackToGame podczas bargain
  * TODO: AI!!
- * TODO: szybkosc gry zwalnia z czasem.. jakies zapychanie socketa? juz chyba nie
- * TODO: info
+ * TOD0: ~info (najpierw endgame, territory count)
  * TODO: komentarze - z @ author, return, params moze tez
  * 
  * */
@@ -38,6 +36,8 @@ public class GoClient implements ActionListener{
 	private MainMenu mainMenu;
 	protected BoardFrame boardFrame;
 	private SettingsFrame settings;
+	/** Okno informujace o dolaczeniu do kolejki. */
+	private WaitingFrame waitingFrame;
 	
 	/** Nasluchiwacz polecen od serwera w czasie gry. */
 	protected ActionListener listener;
@@ -76,7 +76,8 @@ public class GoClient implements ActionListener{
 	     }
 	}// end listenSocket
 	
-	/** Metoda obslugujaca zdarzenia wysylane przez okna klienta. */
+	/** Metoda obslugujaca zdarzenia wysylane przez okna klienta. 
+	 *  Klient jest ActionListener wszystkich przyciskow w oknach. */
 	public void actionPerformed(ActionEvent e) {
 		/* Kazdy if wysyla do serwera odpowiedni komunikat, ktory serwer obsluguje metoda executeCommand*/
 		String command = "OK";
@@ -91,7 +92,7 @@ public class GoClient implements ActionListener{
 		}else if(e.getActionCommand() == "Send"){		
 			command = "GAME SEND BARGAIN "    + boardFrame.playerColor;
 			for(int[] s: boardFrame.bargainHandler.selectedStones){
-				command += s[0] + " " + s[1] + " ";
+				command += s[0] + " " + s[1] + " ";		// tworzenie Stringa z pozycjami zaznaczonych kamieni na planszy
 			}
 		}else if(e.getActionCommand() == "Accept"){			
 			boardFrame.boardBuilder.bargainAccept.setEnabled(false);
@@ -110,6 +111,9 @@ public class GoClient implements ActionListener{
 			boardFrame.removeMouseListener();
 			boardFrame.disableButtons();
 			command = "GAME PASS";
+		}else if(e.getActionCommand() == "INFO"){
+			JOptionPane.showMessageDialog(boardFrame, 
+					"Not implemented (no territory count implemented - not enough info to show).", null, 0);
 		}else if(e.getActionCommand().startsWith("GAME") ){	command = e.getActionCommand();
 		}
 		/* Wyslij polecenie do server i czekaj na odpowiedz */
@@ -120,8 +124,7 @@ public class GoClient implements ActionListener{
 	} // end actionPerformed
 
 	
-	/** Metoda wykonujaca polecenia otrzymane od serwera.
-	 * mozna pomyslec o osobnych funkcjach, zeby nie przedluzacz tej metody za bardzo*/
+	/** Metoda wykonujaca polecenia otrzymane od serwera.*/
 	private void executeCommand(String command){
 		if(command == null){System.out.println("null command."); return;}
 
@@ -139,10 +142,21 @@ public class GoClient implements ActionListener{
 		}else if(command.startsWith("EXIT")){
 			System.exit(0);
 		}else if(command.startsWith("WAIT OPPONENT")){  
-			//TODO: okno z info o czekaniu
+			waitOpponent();
 		}
 	} // end executeCommand
 	
+	/** Metoda tworzy okno czekania na przeciwnika.*/
+	private void waitOpponent() {
+		waitingFrame = new WaitingFrame();
+		waitingFrame.setVisible(true);
+		waitingFrame.setLabelInfo();
+		waitingFrame.repaint();
+		try {
+			executeCommand(in.readLine());
+		} catch (IOException e) {	System.out.println("Read failed"); System.exit(1); }	
+	}// end waitOpponent
+
 	/** Metoda otwiera okno z gra z odpowiednimi ustawieniami. */
 	private void openBoard(String command){
 		int size;
@@ -175,6 +189,7 @@ public class GoClient implements ActionListener{
 	
 	/** Metoda zaczyna komunikacje w czasie gry miedzy klientami a serwerem. */
 	private void startGame(){
+		if(waitingFrame != null) waitingFrame.setVisible(false);
 		if(boardFrame.playerColor == 'B'){ boardFrame.addMouseListener();}
 		int timerDelay = 150; // in ms
 		listener = new ActionListener(){

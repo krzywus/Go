@@ -15,7 +15,7 @@ public class LibertyVisitor {
 	
 /*-------------------------------------------------------------------------------------------------------------------*/
 	
-	LibertyVisitor(Stone board[][], int gameSize){
+	public LibertyVisitor(Stone board[][], int gameSize){
 		this.board = board;
 		this.gameSize = gameSize;
 		visitBoard = new boolean[gameSize][gameSize];
@@ -51,12 +51,12 @@ public class LibertyVisitor {
 		int posX = stone.positionX;
 		int posY = stone.positionY;
 		visitBoard[posX][posY] = true;
-		if( posX-1 >= 0 		  && visitBoard[posX-1][posY] == false && board[posX-1][posY].color == playerColor){
+		if( posX-1 >= 0 	&& visitBoard[posX-1][posY] == false && board[posX-1][posY].color == playerColor){
 			if(!neighbours.contains(board[posX-1][posY])){ 
 				neighbours.add(board[posX-1][posY]);
 				getNeighbours(board[posX-1][posY], neighbours);}
 		}
-		if( posY-1 >= 0 		  && visitBoard[posX][posY-1] == false && board[posX][posY-1].color == playerColor){
+		if( posY-1 >= 0 	&& visitBoard[posX][posY-1] == false && board[posX][posY-1].color == playerColor){
 			if(!neighbours.contains(board[posX][posY-1])){ 
 				neighbours.add(board[posX][posY-1]);
 				getNeighbours(board[posX][posY-1], neighbours);}

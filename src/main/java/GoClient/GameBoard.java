@@ -154,7 +154,7 @@ public class GameBoard extends JPanel {
 		}
 	} // end deleteDeadStone
 
-	/**Metoda zwracajaca pozycje ostatniego polozonego kamienia. */
+	/** Metoda zwracajaca pozycje ostatniego polozonego kamienia. */
 	protected int[] getBoardChange() {
 		return newStone;
 	}// end getBoardChange

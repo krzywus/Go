@@ -1,6 +1,7 @@
 package GoServer;
 
 import GoServer.GameSession.GameSession;
+
 /** Class join players into games. Design pattern: Singleton. */
 public class Matchmaker{
 	
@@ -21,7 +22,7 @@ public class Matchmaker{
 		bigBoardPlayer 		= new ClientHandler[2];
 	}// end Matchmaker constr
 	
-	/** Metoda implementujaca wzorzezc singleton. Zwraca instancje klasy. */
+	/** Metoda implementujaca wzorzezc singleton. Zwraca instancje klasy. (double-checked locking) */
 	public static Matchmaker getInstance() {
 		Matchmaker result = instance;
 		if (result == null) {
@@ -37,6 +38,7 @@ public class Matchmaker{
 	
 	
 	/** Metoda laczy graczy w pary na podstawie ustawien. Kiedy para jest polaczona rozpoczyna gre dla tej pary. */
+	@SuppressWarnings("unused")
 	public synchronized boolean addPlayer(ClientHandler player, int boardSize, int opponentType){
 		if(opponentType == 1){
 			return false;/*TODO: Uruchom gre przeciwko AI*/

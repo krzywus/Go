@@ -33,8 +33,16 @@ public class GameSession {
 	
 	/** Metoda startuje gry w dla obu klientow - dla pierwszego odblokowuje plansze, dla drugiego uruchamia.*/
 	private void startGame(){
-		black.startGame(white, 'B');
-		white.startGame(black, 'W');
+		if(black != null && white !=null){
+			black.startGame(white, 'B');
+			white.startGame(black, 'W');
+		}else{
+			if(black == null){
+				white.enemyLeftMatchmaking();
+			}else{
+				black.enemyLeftMatchmaking();
+			}
+		}
 	}// end startGame
 	
 	/** Metoda losuje, ktory gracz zaczyna jako czarny a ktory jako bialy.

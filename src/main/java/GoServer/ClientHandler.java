@@ -87,9 +87,7 @@ public class ClientHandler extends Thread {
 			execute = "CLOSE SETTINGS"; 
 		}else if(command.startsWith("START")){
 			if(!server.matchmaker.addPlayer(this, settings.boardSize, settings.opponentType)){
-				skipExecution = true;
-				/**TODO: waiting frame*/
-				//execute = "WAIT OPPONENT";
+				execute = "WAIT OPPONENT";
 			} // w przeciwnym wypadku gra powinna sie otworzyc. 
 		} 
 		
@@ -115,6 +113,12 @@ public class ClientHandler extends Thread {
 		String execute = "OPEN BOARD " + settings.boardSize + " " + settings.opponentType + " " + color;
 		out.println(execute); /* Wyslanie odpowiedniej komendy do klienta. */
 	}// end startGame
+	
+	/** Metoda wraca klienta do matchmakingu. */
+	public void enemyLeftMatchmaking(){
+		session = null;
+		server.matchmaker.addPlayer(this, settings.boardSize, settings.opponentType);
+	}
 	
 	/** Metoda ustawia sesje rozgrywki dla klienta. */
 	public void setGameSession(GameSession session){
