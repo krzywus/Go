@@ -34,5 +34,5 @@ in bots Main class by edditing board on which bots computes ( you have to edit i
 In docs folder you can find few UML diagrams ilustrating the sytem.<br />
 
 
-######Testing<br />
+#####Testing<br />
 Project contains few JUnit test, few of which use Mockito.
